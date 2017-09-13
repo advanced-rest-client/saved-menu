@@ -1,3 +1,13 @@
+<a name="0.1.2"></a>
+## [0.1.2](https://github.com/advanced-rest-client/saved-menu/compare/0.1.1...0.1.2) (2017-09-13)
+
+
+### Update
+
+* Updated empty state image ([95e74c8cfc88c87e63e600f6c4624d4c620e100b](https://github.com/advanced-rest-client/saved-menu/commit/95e74c8cfc88c87e63e600f6c4624d4c620e100b))
+
+
+
 <a name="0.1.1"></a>
 ## 0.1.1 (2017-09-13)
 
