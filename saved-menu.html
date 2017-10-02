@@ -350,7 +350,7 @@ Custom property | Description | Default
       if (typeof datastore === 'string') {
         datastore = [datastore];
       }
-      if (datastore.indexOf('saved-requests') === -1) {
+      if (datastore.indexOf('saved-requests') === -1 && datastore[0] !== 'all') {
         return;
       }
 
