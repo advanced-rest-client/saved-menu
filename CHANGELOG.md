@@ -1,3 +1,13 @@
+<a name="0.1.4"></a>
+## [0.1.4](https://github.com/advanced-rest-client/saved-menu/compare/0.1.2...0.1.4) (2017-10-02)
+
+
+### Update
+
+* Added handler for all database destroy event. ([b2a0919223c94b9527d0a8b3c1e60a3fea983e75](https://github.com/advanced-rest-client/saved-menu/commit/b2a0919223c94b9527d0a8b3c1e60a3fea983e75))
+
+
+
 <a name="0.1.3"></a>
 ## [0.1.3](https://github.com/advanced-rest-client/saved-menu/compare/0.1.2...0.1.3) (2017-09-13)
 
