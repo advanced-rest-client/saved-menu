@@ -1,3 +1,13 @@
+<a name="0.1.5"></a>
+## [0.1.5](https://github.com/advanced-rest-client/saved-menu/compare/0.1.4...0.1.5) (2017-10-02)
+
+
+### Update
+
+* Adding hidden object CSS ([404faf9a6443f37ef615c4258d6675d8ea6fdb65](https://github.com/advanced-rest-client/saved-menu/commit/404faf9a6443f37ef615c4258d6675d8ea6fdb65))
+
+
+
 <a name="0.1.4"></a>
 ## [0.1.4](https://github.com/advanced-rest-client/saved-menu/compare/0.1.2...0.1.4) (2017-10-02)
 
