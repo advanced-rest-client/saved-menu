@@ -144,7 +144,7 @@ Custom property | Description | Default
       width: 180px;
       height: 120px;
     }
-    
+
     [hidden] {
       display: none !important;
     }
@@ -403,7 +403,6 @@ Custom property | Description | Default
     _loadPage: function() {
       var db = this._db;
       this._setQuerying(true);
-
       db.allDocs(this.queryOptions)
       .then(response => {
         this._setQuerying(false);
@@ -412,14 +411,7 @@ Custom property | Description | Default
           this.queryOptions.startkey = response.rows[response.rows.length - 1].key;
           this.queryOptions.skip = 1;
           let res = response.rows.map(item => item.id);
-          res = this._processResults(res);
-          if (!this.items) {
-            this.set('items', res);
-          } else {
-            res.forEach(item => {
-              this.push('items', item);
-            });
-          }
+          return this._processQueryResults(res);
         }
       })
       .catch((e) => {
@@ -436,34 +428,28 @@ Custom property | Description | Default
      * @param {Array} res List of saved items retreived from the datastore.
      * @return {Array} Processed data items.
      */
-    _processResults: function(res) {
-      // creates a list object from the database ID
-      res = this._objectFromId(res);
-      return res;
-    },
-    /**
-     * Query for this element gets only IDs from the datastore, not entire
-     * objects. All information required to render this view are inclosed in the
-     * `_id` property. This function transforms the `_id` into the request object.
-     *
-     * @param {Array} items List of saved items' IDs
-     * @return {Array} View data model.
-     */
-    _objectFromId: function(items) {
-      items = items.map(item => {
-        //"NAME/URL/METHOD"
-        let parts  = item.split('/');
-        let name = decodeURIComponent(parts[0]);
-        let url = decodeURIComponent(parts[1]);
-        let method = parts[2];
-        return {
-          _id: item,
-          name: name,
-          method: method,
-          url: url
-        };
+    _processQueryResults: function(res) {
+      return this._db.allDocs({
+        include_docs: true,
+        keys: res
+      })
+      .then(docs => {
+        var list = docs.rows.map(item => {
+          return {
+            _id: item.id,
+            name: item.doc.name,
+            method: item.doc.method,
+            url: item.doc.url
+          };
+        });
+        if (!this.items) {
+          this.set('items', list);
+        } else {
+          list.forEach(item => {
+            this.push('items', item);
+          });
+        }
       });
-      return items;
     },
     // Computes value for the `dataUnavailable` property.
     _computeDataUnavailable: function(hasItems, querying) {
