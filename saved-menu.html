@@ -56,6 +56,8 @@ Custom property | Description | Default
 `--saved-menu-selected-item-background-color` | Background color of the selected list item | `#FF9800`
 `--saved-menu-selected-item-color` | Color of the selected list item | `#fff`
 `--saved-menu-name-label` | Mixin applied to the name label | `{}`
+`--arc-menu-empty-info-color` | Color applied to the empty info section | ``
+`--arc-menu-empty-info-title-color` | Color applied to the title in the empty info section | ``
 
 @group UI Elements
 @element saved-menu
@@ -126,13 +128,13 @@ Custom property | Description | Default
       @apply --arc-font-body1;
       font-style: italic;
       margin: 1em 16px;
-      color: var(--saved-menu-empty-info-color);
+      color: var(--arc-menu-empty-info-color);
     }
 
     .empty-title {
       @apply --paper-font-title;
       white-space: normal;
-      color: var(--saved-menu-empty-info-title-color);
+      color: var(--arc-menu-empty-info-title-color);
     }
 
     .empty-message {
