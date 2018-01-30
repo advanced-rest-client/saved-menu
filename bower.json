@@ -1,7 +1,7 @@
 {
   "name": "saved-menu",
   "description": "A list of saved items in the ARC main menu",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "license": "Apache-2.0 OR CC-BY-4.0",
   "authors": [
     "The Advanced REST client authors <arc@mulesoft.com>"
