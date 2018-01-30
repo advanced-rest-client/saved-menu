@@ -36,4 +36,6 @@ Custom property | Description | Default
 `--saved-menu-selected-item-background-color` | Background color of the selected list item | `#FF9800`
 `--saved-menu-selected-item-color` | Color of the selected list item | `#fff`
 `--saved-menu-name-label` | Mixin applied to the name label | `{}`
+`--arc-menu-empty-info-color` | Color applied to the empty info section | ``
+`--arc-menu-empty-info-title-color` | Color applied to the title in the empty info section | ``
 

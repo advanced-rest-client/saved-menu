@@ -1,3 +1,13 @@
+<a name="0.1.11"></a>
+## [0.1.11](https://github.com/advanced-rest-client/saved-menu/compare/0.1.10...0.1.11) (2018-01-30)
+
+
+### Update
+
+* Adding CSS variables for empty info screen. ([718106c8aca93c216e9066d62db14da2830dfd06](https://github.com/advanced-rest-client/saved-menu/commit/718106c8aca93c216e9066d62db14da2830dfd06))
+
+
+
 <a name="0.1.10"></a>
 ## [0.1.10](https://github.com/advanced-rest-client/saved-menu/compare/0.1.9...0.1.10) (2018-01-30)
 
