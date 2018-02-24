@@ -1,3 +1,13 @@
+<a name="0.1.15"></a>
+## [0.1.15](https://github.com/advanced-rest-client/saved-menu/compare/0.1.14...0.1.15) (2018-02-24)
+
+
+### Update
+
+* Removed unused styles. ([a0231f2b22075335496151b14f3e176ba915b94d](https://github.com/advanced-rest-client/saved-menu/commit/a0231f2b22075335496151b14f3e176ba915b94d))
+
+
+
 <a name="0.1.14"></a>
 ## [0.1.14](https://github.com/advanced-rest-client/saved-menu/compare/0.1.13...0.1.14) (2018-02-24)
 
