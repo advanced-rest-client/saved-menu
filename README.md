@@ -45,13 +45,9 @@ Custom property | Description | Default
 ----------------|-------------|----------
 `--saved-menu` | Mixin applied to the element | `{}`
 `--saved-menu-background-color` | Background color of the menu | `#f7f7f7`
-`--saved-menu-selected-post-method-color` | Font color of selected item POST method label | `#fff`
 `--saved-menu-focused-post-method-color` | Font color of focused item POST method label | `rgb(33, 150, 243)`
-`--saved-menu-selected-method-label-background-color` | Background color of the POST method label when the item is focused | `#fff`
 `--saved-menu-list` | Mixin applied to the list element. | `{}`
 `--saved-menu-list-item` | Mixin applied to each list item | `{}`
-`--saved-menu-selected-item-background-color` | Background color of the selected list item | `#FF9800`
-`--saved-menu-selected-item-color` | Color of the selected list item | `#fff`
 `--saved-menu-name-label` | Mixin applied to the name label | `{}`
 `--arc-menu-empty-info-color` | Color applied to the empty info section | ``
 `--arc-menu-empty-info-title-color` | Color applied to the title in the empty info section | ``
