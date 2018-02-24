@@ -301,13 +301,13 @@ Custom property | Description | Default
     },
     // Handler for the `request-object-changed`
     _requestChanged: function(e) {
-      if (e.cancelable) {
+      if (!this.items && !this._isOpened || e.cancelable) {
         return;
       }
       if (e.detail.type !== 'saved-requests') {
         return;
       }
-      this._processItemChanged(e.detail.request._id, e.detail.request);
+      this._processItemChanged(e.detail.oldId, e.detail.request);
     },
     /**
      * Processes updated request / saved item.
@@ -322,17 +322,17 @@ Custom property | Description | Default
       if (!items) {
         return this.set('items', [doc]);
       }
-      for (var i = 0, len = items.length; i < len; i++) {
-        if (items[i]._id === id) {
-          return this.set(['items', i], doc);
-        }
+      let index = items.findIndex((item) => item._id === id);
+      if (index !== -1) {
+        this.set(['items', index], doc);
+      } else {
+        this.push('items', doc);
       }
-      this.push('items', doc);
     },
 
     // Hanlder for the `request-object-deleted` event. Removed item from list if found.
     _requestDeleted: function(e) {
-      if (e.cancelable) {
+      if (!this.items && !this._isOpened || e.cancelable) {
         return;
       }
       if (e.detail.type !== 'saved-requests') {
