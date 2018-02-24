@@ -170,7 +170,7 @@ Custom property | Description | Default
     </template>
     <iron-list items="[[items]]" id="list" hidden$="[[!hasItems]]">
       <template>
-        <div data-index$="[[index]]" title$="[[item.url]]" class$="[[_computeItemClass(item._id, selectedItem)]]">
+        <div data-index$="[[index]]" title$="[[item.url]]">
           <paper-item on-tap="_openSaved">
             <http-method-label method="[[item.method]]"></http-method-label>
             <span class="name">[[item.name]]</span>
@@ -195,8 +195,6 @@ Custom property | Description | Default
        * Saved items restored from the datastore.
        */
       items: Array,
-      // Database ID of the selected item.
-      selectedItem: String,
       // True when the element is querying the database for the data.
       querying: {
         type: Boolean,
@@ -282,8 +280,7 @@ Custom property | Description | Default
         delete this.queryOptions.skip;
       }
       this._setQuerying(false);
-      this.set('items', []);
-      this.set('selectedItemIndex', -1);
+      this.set('items', undefined);
     },
     /**
      * Refreshes the data from the datastore.
@@ -362,19 +359,8 @@ Custom property | Description | Default
       if (datastore.indexOf('saved-requests') === -1 && datastore[0] !== 'all') {
         return;
       }
-
       this._db.close()
-      .then(() => {
-        this.refresh();
-      });
-    },
-    /**
-     * Computes class name for the HTML element representing a saved item.
-     */
-    _computeItemClass: function(_id, selectedItem) {
-      if (_id && _id === selectedItem) {
-        return 'iron-selected';
-      }
+      .then(() => this.refresh());
     },
     // Computes value for the `hasItems` property.
     _computeHasItems: function(length) {
