@@ -315,7 +315,7 @@ Custom property | Description | Default
     },
     // Handler for the `request-object-changed`
     _requestChanged: function(e) {
-      if (!this.items && !this._isOpened || e.cancelable) {
+      if ((!this.items && !this._isOpened) || e.cancelable) {
         return;
       }
       if (e.detail.type !== 'saved-requests') {
@@ -334,7 +334,8 @@ Custom property | Description | Default
     _processItemChanged: function(id, doc) {
       var items = this.items;
       if (!items) {
-        return this.set('items', [doc]);
+        this.set('items', [doc]);
+        return;
       }
       let index = items.findIndex((item) => item._id === id);
       if (index !== -1) {
@@ -346,7 +347,7 @@ Custom property | Description | Default
 
     // Hanlder for the `request-object-deleted` event. Removed item from list if found.
     _requestDeleted: function(e) {
-      if (!this.items && !this._isOpened || e.cancelable) {
+      if ((!this.items && !this._isOpened) || e.cancelable) {
         return;
       }
       if (e.detail.type !== 'saved-requests') {
@@ -403,7 +404,7 @@ Custom property | Description | Default
      * The function to call when new query for data is needed.
      */
     makeQuery: function() {
-      this.debounce('menu-load-saved-page', this._loadPage, 100);
+      this.debounce('menu-load-saved-page', this._loadPage, 75);
     },
     /**
      * Performs the query and processes the result.
@@ -419,7 +420,7 @@ Custom property | Description | Default
           this.queryOptions.startkey = response.rows[response.rows.length - 1].key;
           this.queryOptions.skip = 1;
           let res = response.rows.map((item) => item.doc);
-          return this._processQueryResults(res);
+          this._processQueryResults(res);
         }
       })
       .catch((e) => {
