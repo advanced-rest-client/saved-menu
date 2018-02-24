@@ -1,3 +1,23 @@
+<a name="0.1.13"></a>
+## [0.1.13](https://github.com/advanced-rest-client/saved-menu/compare/0.1.12...0.1.13) (2018-02-24)
+
+
+### Docs
+
+* Updated documentation of the element. ([6a16afd4bdf5baf492e210ed414f38af32ebab55](https://github.com/advanced-rest-client/saved-menu/commit/6a16afd4bdf5baf492e210ed414f38af32ebab55))
+
+### Fix
+
+* The element now updates the list only when it should ([a55380df27a494b35caa1323e4c4d1f595561239](https://github.com/advanced-rest-client/saved-menu/commit/a55380df27a494b35caa1323e4c4d1f595561239))
+
+### Update
+
+* Now the element queries DB only once for more data ([1624461ec07847e629fe98eedaabee0003423d03](https://github.com/advanced-rest-client/saved-menu/commit/1624461ec07847e629fe98eedaabee0003423d03))
+* Removed selection check from the element. ([144910c1128ef01b52cd4704ba1a9112abf7b444](https://github.com/advanced-rest-client/saved-menu/commit/144910c1128ef01b52cd4704ba1a9112abf7b444))
+* Updated tests ([b71318d5bdc745e82fa0673312870c0394616dec](https://github.com/advanced-rest-client/saved-menu/commit/b71318d5bdc745e82fa0673312870c0394616dec))
+
+
+
 <a name="0.1.12"></a>
 ## [0.1.12](https://github.com/advanced-rest-client/saved-menu/compare/0.1.11...0.1.12) (2018-01-30)
 

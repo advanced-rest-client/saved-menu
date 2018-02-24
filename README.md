@@ -5,13 +5,30 @@
 A list of saved items in the ARC main menu.
 
 The element uses direct implementation of the PouchDB to make a query to the
-datastore. It also listens to events fired by the `arc-model` elements to
-update state of the saved items.
+datastore. It also listens to events fired by the `arc-models/request-model`
+element to update state of the saved items.
 
 ### Example
 ```
 <saved-menu></saved-menu>
+<request-model></request-model>
 ```
+
+### Events
+
+The element listens for the following events.
+
+#### request-object-changed
+
+The details object has to contain the following properties:
+- `request` (`Object`) - Updated request object. Note, if `_id` of the object changed this should be a copy of the object. Otherwise it won't be possible to recognise old object on the list.
+- `oldId` (`String`) - The `_id` property of the item from before the change.
+
+Note: `items` list does not contain full request object. Don't use array of this items to update request object.
+
+#### request-object-deleted
+The details object has to contain the following properties:
+- `id` (`String`) - The `_id` property of removed item.
 
 ### Sizing the element
 
