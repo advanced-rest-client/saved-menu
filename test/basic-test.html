@@ -78,7 +78,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           composed: true,
           detail: {
             type: 'saved-requests',
-            request: r[0]
+            request: r[0],
+            oldId: r[0]._id
           }
         });
         document.body.dispatchEvent(e);
@@ -102,7 +103,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           appendRequest();
           assert.isFalse(element.dataUnavailable);
           done();
-        }, 50);
+        }, 100);
       });
     });
     </script>

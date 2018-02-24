@@ -43,11 +43,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <h3>The `saved-menu`</h3>
     <demo-snippet>
       <template>
-        <saved-menu></saved-menu>
+        <saved-menu id="menu"></saved-menu>
         <button id="generate">Generate 100 history items</button>
         <button id="delete">Clear history</button>
         <button id="refresh">Refresh history</button>
+        <button id="changed">Inform first item changed</button>
+        <button id="deleted">Inform first item deleted</button>
         <script>
+        /* global chance */
         document.getElementById('refresh').addEventListener('click', function() {
           document.querySelector('saved-menu').refresh();
         });
@@ -55,13 +58,52 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           DataGenerator.generateData(100)
           .then(() => {
             document.getElementById('genToast').opened = true;
+            var e = new CustomEvent('data-imported', {
+              bubbles: true
+            });
+            document.body.dispatchEvent(e);
           });
         });
         document.getElementById('delete').addEventListener('click', function() {
           DataGenerator.destroyData()
           .then(() => {
             document.getElementById('delToast').opened = true;
+            var e = new CustomEvent('datastore-destroyed', {
+              detail: {
+                datastore: 'all'
+              },
+              bubbles: true
+            });
+            document.body.dispatchEvent(e);
           });
+        });
+        document.getElementById('changed').addEventListener('click', function() {
+          let item = document.getElementById('menu').items[0];
+          item = Object.assign({}, item);
+          item.name = 'Changed to: ' + chance.sentence({words: 2});
+          let id = item._id;
+          item._id += '/test';
+          var e = new CustomEvent('request-object-changed', {
+            detail: {
+              request: item,
+              type: 'saved-requests',
+              oldId: id
+            },
+            bubbles: true
+          });
+          document.body.dispatchEvent(e);
+        });
+        document.getElementById('deleted').addEventListener('click', function() {
+          let item = document.getElementById('menu').items[0];
+          var e = new CustomEvent('request-object-deleted', {
+            detail: {
+              oldRev: item._rev,
+              id: item._id,
+              type: 'saved-requests'
+            },
+            bubbles: true
+          });
+          document.body.dispatchEvent(e);
         });
         </script>
       </template>

@@ -25,13 +25,30 @@ the License.
 A list of saved items in the ARC main menu.
 
 The element uses direct implementation of the PouchDB to make a query to the
-datastore. It also listens to events fired by the `arc-model` elements to
-update state of the saved items.
+datastore. It also listens to events fired by the `arc-models/request-model`
+element to update state of the saved items.
 
 ### Example
 ```
 <saved-menu></saved-menu>
+<request-model></request-model>
 ```
+
+### Events
+
+The element listens for the following events.
+
+#### request-object-changed
+
+The details object has to contain the following properties:
+- `request` (`Object`) - Updated request object. Note, if `_id` of the object changed this should be a copy of the object. Otherwise it won't be possible to recognise old object on the list.
+- `oldId` (`String`) - The `_id` property of the item from before the change.
+
+Note: `items` list does not contain full request object. Don't use array of this items to update request object.
+
+#### request-object-deleted
+The details object has to contain the following properties:
+- `id` (`String`) - The `_id` property of removed item.
 
 ### Sizing the element
 
@@ -170,7 +187,7 @@ Custom property | Description | Default
     </template>
     <iron-list items="[[items]]" id="list" hidden$="[[!hasItems]]">
       <template>
-        <div data-index$="[[index]]" title$="[[item.url]]" class$="[[_computeItemClass(item._id, selectedItem)]]">
+        <div data-index$="[[index]]" title$="[[item.url]]">
           <paper-item on-tap="_openSaved">
             <http-method-label method="[[item.method]]"></http-method-label>
             <span class="name">[[item.name]]</span>
@@ -195,8 +212,6 @@ Custom property | Description | Default
        * Saved items restored from the datastore.
        */
       items: Array,
-      // Database ID of the selected item.
-      selectedItem: String,
       // True when the element is querying the database for the data.
       querying: {
         type: Boolean,
@@ -224,7 +239,8 @@ Custom property | Description | Default
         value: function() {
           return {
             limit: 25,
-            descending: true
+            descending: true,
+            include_docs: true
           };
         }
       },
@@ -281,8 +297,7 @@ Custom property | Description | Default
         delete this.queryOptions.skip;
       }
       this._setQuerying(false);
-      this.set('items', []);
-      this.set('selectedItemIndex', -1);
+      this.set('items', undefined);
     },
     /**
      * Refreshes the data from the datastore.
@@ -300,13 +315,13 @@ Custom property | Description | Default
     },
     // Handler for the `request-object-changed`
     _requestChanged: function(e) {
-      if (e.cancelable) {
+      if ((!this.items && !this._isOpened) || e.cancelable) {
         return;
       }
       if (e.detail.type !== 'saved-requests') {
         return;
       }
-      this._processItemChanged(e.detail.request._id, e.detail.request);
+      this._processItemChanged(e.detail.oldId, e.detail.request);
     },
     /**
      * Processes updated request / saved item.
@@ -319,19 +334,20 @@ Custom property | Description | Default
     _processItemChanged: function(id, doc) {
       var items = this.items;
       if (!items) {
-        return this.set('items', [doc]);
+        this.set('items', [doc]);
+        return;
       }
-      for (var i = 0, len = items.length; i < len; i++) {
-        if (items[i]._id === id) {
-          return this.set(['items', i], doc);
-        }
+      let index = items.findIndex((item) => item._id === id);
+      if (index !== -1) {
+        this.set(['items', index], doc);
+      } else {
+        this.push('items', doc);
       }
-      this.push('items', doc);
     },
 
     // Hanlder for the `request-object-deleted` event. Removed item from list if found.
     _requestDeleted: function(e) {
-      if (e.cancelable) {
+      if ((!this.items && !this._isOpened) || e.cancelable) {
         return;
       }
       if (e.detail.type !== 'saved-requests') {
@@ -361,19 +377,8 @@ Custom property | Description | Default
       if (datastore.indexOf('saved-requests') === -1 && datastore[0] !== 'all') {
         return;
       }
-
       this._db.close()
-      .then(() => {
-        this.refresh();
-      });
-    },
-    /**
-     * Computes class name for the HTML element representing a saved item.
-     */
-    _computeItemClass: function(_id, selectedItem) {
-      if (_id && _id === selectedItem) {
-        return 'iron-selected';
-      }
+      .then(() => this.refresh());
     },
     // Computes value for the `hasItems` property.
     _computeHasItems: function(length) {
@@ -399,7 +404,7 @@ Custom property | Description | Default
      * The function to call when new query for data is needed.
      */
     makeQuery: function() {
-      this.debounce('menu-load-saved-page', this._loadPage, 20);
+      this.debounce('menu-load-saved-page', this._loadPage, 75);
     },
     /**
      * Performs the query and processes the result.
@@ -408,14 +413,14 @@ Custom property | Description | Default
       var db = this._db;
       this._setQuerying(true);
       db.allDocs(this.queryOptions)
-      .then(response => {
+      .then((response) => {
         this._setQuerying(false);
         if (response && response.rows.length > 0) {
           // Set up pagination.
           this.queryOptions.startkey = response.rows[response.rows.length - 1].key;
           this.queryOptions.skip = 1;
-          let res = response.rows.map(item => item.id);
-          return this._processQueryResults(res);
+          let res = response.rows.map((item) => item.doc);
+          this._processQueryResults(res);
         }
       })
       .catch((e) => {
@@ -432,28 +437,22 @@ Custom property | Description | Default
      * @param {Array} res List of saved items retreived from the datastore.
      * @return {Array} Processed data items.
      */
-    _processQueryResults: function(res) {
-      return this._db.allDocs({
-        include_docs: true,
-        keys: res
-      })
-      .then(docs => {
-        var list = docs.rows.map(item => {
-          return {
-            _id: item.id,
-            name: item.doc.name,
-            method: item.doc.method,
-            url: item.doc.url
-          };
-        });
-        if (!this.items) {
-          this.set('items', list);
-        } else {
-          list.forEach(item => {
-            this.push('items', item);
-          });
-        }
+    _processQueryResults: function(docs) {
+      docs = docs.map((item) => {
+        return {
+          _id: item._id,
+          name: item.name,
+          method: item.method,
+          url: item.url
+        };
       });
+      if (!this.items) {
+        this.set('items', docs);
+      } else {
+        docs.forEach((item) => {
+          this.push('items', item);
+        });
+      }
     },
     // Computes value for the `dataUnavailable` property.
     _computeDataUnavailable: function(hasItems, querying) {
