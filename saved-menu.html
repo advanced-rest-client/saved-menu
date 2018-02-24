@@ -224,7 +224,8 @@ Custom property | Description | Default
         value: function() {
           return {
             limit: 25,
-            descending: true
+            descending: true,
+            include_docs: true
           };
         }
       },
@@ -408,13 +409,13 @@ Custom property | Description | Default
       var db = this._db;
       this._setQuerying(true);
       db.allDocs(this.queryOptions)
-      .then(response => {
+      .then((response) => {
         this._setQuerying(false);
         if (response && response.rows.length > 0) {
           // Set up pagination.
           this.queryOptions.startkey = response.rows[response.rows.length - 1].key;
           this.queryOptions.skip = 1;
-          let res = response.rows.map(item => item.id);
+          let res = response.rows.map(item => item.doc);
           return this._processQueryResults(res);
         }
       })
@@ -432,28 +433,22 @@ Custom property | Description | Default
      * @param {Array} res List of saved items retreived from the datastore.
      * @return {Array} Processed data items.
      */
-    _processQueryResults: function(res) {
-      return this._db.allDocs({
-        include_docs: true,
-        keys: res
-      })
-      .then(docs => {
-        var list = docs.rows.map(item => {
-          return {
-            _id: item.id,
-            name: item.doc.name,
-            method: item.doc.method,
-            url: item.doc.url
-          };
-        });
-        if (!this.items) {
-          this.set('items', list);
-        } else {
-          list.forEach(item => {
-            this.push('items', item);
-          });
-        }
+    _processQueryResults: function(docs) {
+      docs = docs.map(item => {
+        return {
+          _id: item._id,
+          name: item.name,
+          method: item.method,
+          url: item.url
+        };
       });
+      if (!this.items) {
+        this.set('items', docs);
+      } else {
+        docs.forEach(item => {
+          this.push('items', item);
+        });
+      }
     },
     // Computes value for the `dataUnavailable` property.
     _computeDataUnavailable: function(hasItems, querying) {
