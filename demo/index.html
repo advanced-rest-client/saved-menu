@@ -1,113 +1,94 @@
 <!doctype html>
-<!--
-@license
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
 <html>
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
-
   <title>saved-menu demo</title>
-
-  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-
+  <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
   <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
   <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
   <link rel="import" href="../../paper-toast/paper-toast.html">
-
-  <script src="../test/data-generator.js"></script>
+  <link rel="import" href="../../app-pouchdb/pouchdb.html">
+  <script src="data-generator.js"></script>
   <script src="../../chance/dist/chance.min.js"></script>
   <link rel="import" href="../saved-menu.html">
-
-  <style is="custom-style" include="demo-pages-shared-styles">
-
-    .vertical-section-container {
-      max-width: 600px;
-    }
-
+  <custom-style>
+    <style is="custom-style" include="demo-pages-shared-styles">
     saved-menu {
       height: 600px;
     }
-
-  </style>
+    </style>
+  </custom-style>
 </head>
 <body unresolved>
   <div class="vertical-section-container centered">
     <h3>The `saved-menu`</h3>
-    <demo-snippet>
-      <template>
-        <saved-menu id="menu"></saved-menu>
-        <button id="generate">Generate 100 history items</button>
-        <button id="delete">Clear history</button>
-        <button id="refresh">Refresh history</button>
-        <button id="changed">Inform first item changed</button>
-        <button id="deleted">Inform first item deleted</button>
-        <script>
-        /* global chance */
-        document.getElementById('refresh').addEventListener('click', function() {
-          document.querySelector('saved-menu').refresh();
+    <section>
+      <saved-menu id="menu"></saved-menu>
+    </section>
+    <button id="generate">Generate 100 items</button>
+    <button id="delete">Clear list</button>
+    <button id="refresh">Refresh list</button>
+    <button id="changed">Inform first item changed</button>
+    <button id="deleted">Inform first item deleted</button>
+    <script>
+    /* global chance */
+    document.getElementById('refresh').addEventListener('click', function() {
+      document.querySelector('saved-menu').refresh();
+    });
+    document.getElementById('generate').addEventListener('click', function() {
+      DataGenerator.generateData(100)
+      .then(() => {
+        document.getElementById('genToast').opened = true;
+        let e = new CustomEvent('data-imported', {
+          bubbles: true
         });
-        document.getElementById('generate').addEventListener('click', function() {
-          DataGenerator.generateData(100)
-          .then(() => {
-            document.getElementById('genToast').opened = true;
-            var e = new CustomEvent('data-imported', {
-              bubbles: true
-            });
-            document.body.dispatchEvent(e);
-          });
+        document.body.dispatchEvent(e);
+      });
+    });
+    document.getElementById('delete').addEventListener('click', function() {
+      DataGenerator.destroyData()
+      .then(() => {
+        document.getElementById('delToast').opened = true;
+        let e = new CustomEvent('datastore-destroyed', {
+          detail: {
+            datastore: 'all'
+          },
+          bubbles: true
         });
-        document.getElementById('delete').addEventListener('click', function() {
-          DataGenerator.destroyData()
-          .then(() => {
-            document.getElementById('delToast').opened = true;
-            var e = new CustomEvent('datastore-destroyed', {
-              detail: {
-                datastore: 'all'
-              },
-              bubbles: true
-            });
-            document.body.dispatchEvent(e);
-          });
-        });
-        document.getElementById('changed').addEventListener('click', function() {
-          let item = document.getElementById('menu').items[0];
-          item = Object.assign({}, item);
-          item.name = 'Changed to: ' + chance.sentence({words: 2});
-          let id = item._id;
-          item._id += '/test';
-          var e = new CustomEvent('request-object-changed', {
-            detail: {
-              request: item,
-              type: 'saved-requests',
-              oldId: id
-            },
-            bubbles: true
-          });
-          document.body.dispatchEvent(e);
-        });
-        document.getElementById('deleted').addEventListener('click', function() {
-          let item = document.getElementById('menu').items[0];
-          var e = new CustomEvent('request-object-deleted', {
-            detail: {
-              oldRev: item._rev,
-              id: item._id,
-              type: 'saved-requests'
-            },
-            bubbles: true
-          });
-          document.body.dispatchEvent(e);
-        });
-        </script>
-      </template>
-    </demo-snippet>
+        document.body.dispatchEvent(e);
+      });
+    });
+    document.getElementById('changed').addEventListener('click', function() {
+      let item = document.getElementById('menu').items[0];
+      item = Object.assign({}, item);
+      item.name = 'Changed to: ' + chance.sentence({words: 2});
+      let id = item._id;
+      item._id += '/test';
+      let e = new CustomEvent('request-object-changed', {
+        detail: {
+          request: item,
+          type: 'saved-requests',
+          oldId: id
+        },
+        bubbles: true
+      });
+      document.body.dispatchEvent(e);
+    });
+    document.getElementById('deleted').addEventListener('click', function() {
+      let item = document.getElementById('menu').items[0];
+      let e = new CustomEvent('request-object-deleted', {
+        detail: {
+          oldRev: item._rev,
+          id: item._id,
+          type: 'saved-requests'
+        },
+        bubbles: true
+      });
+      document.body.dispatchEvent(e);
+    });
+    </script>
   </div>
   <paper-toast id="genToast" text="The request data has been generated"></paper-toast>
   <paper-toast id="delToast" text="The request data has been removed"></paper-toast>

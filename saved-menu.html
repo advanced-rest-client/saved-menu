@@ -1,6 +1,6 @@
 <!--
 @license
-Copyright 2016 The Advanced REST client authors <arc@mulesoft.com>
+Copyright 2018 The Advanced REST client authors <arc@mulesoft.com>
 Licensed under the Apache License, Version 2.0 (the "License"); you may not
 use this file except in compliance with the License. You may obtain a copy of
 the License at
@@ -11,94 +11,46 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 -->
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../paper-item/paper-icon-item.html">
+<link rel="import" href="../paper-item/paper-item-body.html">
 <link rel="import" href="../paper-ripple/paper-ripple.html">
 <link rel="import" href="../paper-progress/paper-progress.html">
 <link rel="import" href="../iron-list/iron-list.html">
-<link rel="import" href="../iron-scroll-target-behavior/iron-scroll-target-behavior.html">
-<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../http-method-label/http-method-label.html">
-<link rel="import" href="../openable-panel-behavior/openable-panel-behavior.html">
-<link rel="import" href="../app-pouchdb/pouchdb.html">
-<!--
-A list of saved items in the ARC main menu.
-
-The element uses direct implementation of the PouchDB to make a query to the
-datastore. It also listens to events fired by the `arc-models/request-model`
-element to update state of the saved items.
-
-### Example
-```
-<saved-menu></saved-menu>
-<request-model></request-model>
-```
-
-### Events
-
-The element listens for the following events.
-
-#### request-object-changed
-
-The details object has to contain the following properties:
-- `request` (`Object`) - Updated request object. Note, if `_id` of the object changed this should be a copy of the object. Otherwise it won't be possible to recognise old object on the list.
-- `oldId` (`String`) - The `_id` property of the item from before the change.
-
-Note: `items` list does not contain full request object. Don't use array of this items to update request object.
-
-#### request-object-deleted
-The details object has to contain the following properties:
-- `id` (`String`) - The `_id` property of removed item.
-
-### Sizing the element
-
-The element uses `<iron-list>` to render the data in the view. The list is set
-to be flex vertically. It means that the element has to be sized directly by the
-hosting application or otherwise it size will be 0px.
-
-It can be done using flex layout and making the element to be `flex: 1`.
-
-### Styling
-`<saved-menu>` provides the following custom properties and mixins for styling:
-
-Custom property | Description | Default
-----------------|-------------|----------
-`--saved-menu` | Mixin applied to the element | `{}`
-`--saved-menu-background-color` | Background color of the menu | `#f7f7f7`
-`--saved-menu-focused-post-method-color` | Font color of focused item POST method label | `rgb(33, 150, 243)`
-`--saved-menu-list` | Mixin applied to the list element. | `{}`
-`--saved-menu-list-item` | Mixin applied to each list item | `{}`
-`--saved-menu-name-label` | Mixin applied to the name label | `{}`
-`--arc-menu-empty-info-color` | Color applied to the empty info section | ``
-`--arc-menu-empty-info-title-color` | Color applied to the title in the empty info section | ``
-
-@group UI Elements
-@element saved-menu
-@demo demo/index.html
--->
 <dom-module id="saved-menu">
   <template>
     <style>
-     :host {
+    :host {
       display: block;
-      background-color: var(--saved-menu-background-color, #f7f7f7);
+      background-color: var(--saved-menu-background-color, inherit);
       position: relative;
+
+      --paper-item-icon-width: 72px;
+
       @apply --layout-flex;
       @apply --layout-vertical;
       @apply --saved-menu;
     }
 
-    paper-item:focus http-method-label[method="post"] {
+    paper--icon-item:focus http-method-label[method="post"] {
       color: var(--saved-menu-selected-post-method-color, #fff);
     }
 
-    .iron-selected paper-item:focus http-method-label[method="post"] {
+    .iron-selected paper-icon-item:focus http-method-label[method="post"] {
       color: var(--saved-menu-focused-post-method-color, rgb(33, 150, 243));
     }
 
     http-method-label {
-      margin-right: 8px;
       font-size: 14px;
+      height: 52px;
+      width: 52px;
+      text-align: center;
+      padding-top: 14px;
+      box-sizing: border-box;
+      border-radius: 50%;
+      text-overflow: ellipsis;
+      overflow: hidden;
     }
 
     iron-list {
@@ -106,7 +58,7 @@ Custom property | Description | Default
       @apply --saved-menu-list;
     }
 
-    paper-item {
+    paper-icon-item {
       @apply --arc-font-menu;
       font-weight: 400;
       min-height: 36px;
@@ -148,11 +100,6 @@ Custom property | Description | Default
       text-align: center;
     }
 
-    .empty-state-image {
-      width: 180px;
-      height: 120px;
-    }
-
     [hidden] {
       display: none !important;
     }
@@ -161,155 +108,212 @@ Custom property | Description | Default
     <template is="dom-if" if="[[dataUnavailable]]">
       <div class="empty-message">
         <h3 class="empty-title">Save a request and recall it from here</h3>
-        <svg class="empty-state-image" viewBox="0 0 180 120">
-          <defs><style>.cls-1{fill:#4d4d4d;}.cls-2{fill:#666;}.cls-3{fill:#faa;}.cls-4{fill:red;}.cls-5{fill:#d38484;}</style></defs>
-          <g><rect class="cls-1" width="180" height="120"/></g>
-          <rect class="cls-2" x="49" width="131" height="120"/><rect class="cls-2" x="4" y="5" width="41" height="7"/><rect class="cls-2" x="4" y="107.97" width="41" height="7"/>
-          <rect class="cls-2" x="4" y="22" width="35.53" height="7"/><rect class="cls-3" x="4" y="47.33" width="41" height="7"/><rect class="cls-4" x="4" y="47.33" width="9" height="7"/>
-          <rect class="cls-3" x="4" y="62.67" width="32" height="7"/><rect class="cls-3" x="4" y="78" width="32" height="7"/><polygon class="cls-3" points="131.3 33.7 123.6 26 131.71 34.15 139 41.4 139 41.4 131.3 33.7"/>
-          <polygon class="cls-3" points="123.6 26 90 26 90 89.7 139 89.7 139 41.4 123.6 41.4 123.6 26"/><polygon class="cls-5" points="123.6 26 123.6 41.4 139 41.4 131.71 34.15 123.6 26"/>
-        </svg>
         <p class="empty-info">Use <span class="code">[[_computeA11yCommand('s')]]</span> to save a request. It will appear in this place.</p>
       </div>
     </template>
     <iron-list items="[[items]]" id="list" hidden$="[[!hasItems]]">
       <template>
         <div data-index$="[[index]]" title$="[[item.url]]">
-          <paper-item on-tap="_openSaved">
-            <http-method-label method="[[item.method]]"></http-method-label>
-            <span class="name">[[item.name]]</span>
-            <paper-ripple></paper-ripple>
-          </paper-item>
+          <paper-icon-item on-tap="_openSaved">
+            <http-method-label method="[[item.method]]" slot="item-icon"></http-method-label>
+            <paper-item-body two-line>
+              <div>
+                <span class="name">[[item.name]]</span>
+              </div>
+              <div secondary>[[item.url]]</div>
+              <paper-ripple></paper-ripple>
+            </paper-item-body>
+          </paper-icon-item>
         </div>
       </template>
     </iron-list>
   </template>
   <script>
-  Polymer({
-    is: 'saved-menu',
+  /**
+   * A list of saved items in the ARC main menu.
+   *
+   * The element uses direct implementation of the PouchDB to make a query to the
+   * datastore. It also listens to events fired by the `arc-models/request-model`
+   * element to update state of the saved items.
+   *
+   * ### Example
+   *
+   * ```
+   * <saved-menu></saved-menu>
+   * <request-model></request-model>
+   * ```
+   *
+   * ### Events
+   *
+   * The element listens for the following events.
+   *
+   * #### request-object-changed
+   *
+   * The details object has to contain the following properties:
+   * - `request` (`Object`) - Updated request object. Note, if `_id` of the
+   * object changed this should be a copy of the object. Otherwise it won't
+   * be possible to recognise old object on the list.
+   * - `oldId` (`String`) - The `_id` property of the item from before the change.
+   *
+   * Note: `items` list does not contain full request object. Don't use array
+   * of this items to update request object.
+   *
+   * #### request-object-deleted
+   *
+   * The details object has to contain the following properties:
+   * - `id` (`String`) - The `_id` property of removed item.
+   *
+   * ### Sizing the element
+   *
+   * The element uses `<iron-list>` to render the data in the view. The list is set
+   * to be flex vertically. It means that the element has to be sized directly by the
+   * hosting application or otherwise it size will be 0px.
+   *
+   * It can be done using flex layout and making the element to be `flex: 1`.
+   *
+   * ## Changes in version 2
+   *
+   * - PouchDB is no longer included into the element. Each platform can have
+   * different implementation of the library so this element will not make
+   * assumtions about the platform.
+   * - The element does not support "opened" attribute. Once inserted into the
+   * DOM it queries datastore.
+   *
+   * ### Styling
+   * `<saved-menu>` provides the following custom properties and mixins for styling:
+   *
+   * Custom property | Description | Default
+   * ----------------|-------------|----------
+   * `--saved-menu` | Mixin applied to the element | `{}`
+   * `--saved-menu-background-color` | Background color of the menu | `#f7f7f7`
+   * `--saved-menu-focused-post-method-color` | Font color of focused item POST
+   * method label | `rgb(33, 150, 243)`
+   * `--saved-menu-list` | Mixin applied to the list element. | `{}`
+   * `--saved-menu-list-item` | Mixin applied to each list item | `{}`
+   * `--saved-menu-name-label` | Mixin applied to the name label | `{}`
+   * `--arc-menu-empty-info-color` | Color applied to the empty info section | ``
+   * `--arc-menu-empty-info-title-color` | Color applied to the title in the
+   * empty info section | ``
+   *
+   * @polymer
+   * @customElement
+   * @memberof UiElements
+   * @demo demo/index.html
+   */
+  class SavedMenu extends Polymer.Element {
+    static get is() {return 'saved-menu';}
+    static get properties() {
+      return {
+        /**
+         * Saved items restored from the datastore.
+         */
+        items: Array,
+        // True when the element is querying the database for the data.
+        querying: {
+          type: Boolean,
+          readOnly: true,
+          notify: true
+        },
+        // Computed value, true if the `items` property has values.
+        hasItems: {
+          type: Boolean,
+          value: false,
+          computed: '_computeHasItems(items.length)',
+          notify: true
+        },
+        /**
+         * Database query options for pagination.
+         * Override this value to change the query options like limit of the results in one call.
+         *
+         * This is query options passed to the PouchDB `allDocs` function. Note that it will not
+         * set `include_docs` option. A conviniet shortcut is to set the the `includeDocs` property
+         * and the directive will be added automatically.
+         */
+        queryOptions: {
+          type: Object,
+          readOnly: true,
+          value() {
+            return {
+              limit: 25,
+              descending: true,
+              include_docs: true
+            };
+          }
+        },
+        /**
+         * Computed value. True if query ended and there's no results.
+         */
+        dataUnavailable: {
+          type: Boolean,
+          computed: '_computeDataUnavailable(hasItems, querying)'
+        }
+      };
+    }
 
-    behaviors: [
-      Polymer.IronScrollTargetBehavior,
-      Polymer.IronResizableBehavior,
-      ArcBehaviors.OpenablePanelBehavior
-    ],
-
-    properties: {
-      /**
-       * Saved items restored from the datastore.
-       */
-      items: Array,
-      // True when the element is querying the database for the data.
-      querying: {
-        type: Boolean,
-        readOnly: true,
-        notify: true
-      },
-      // Computed value, true if the `items` property has values.
-      hasItems: {
-        type: Boolean,
-        value: false,
-        computed: '_computeHasItems(items.length)',
-        notify: true
-      },
-      /**
-       * Database query options for pagination.
-       * Override this value to change the query options like limit of the results in one call.
-       *
-       * This is query options passed to the PouchDB `allDocs` function. Note that it will not
-       * set `include_docs` option. A conviniet shortcut is to set the the `includeDocs` property
-       * and the directive will be added automatically.
-       */
-      queryOptions: {
-        type: Object,
-        readOnly: true,
-        value: function() {
-          return {
-            limit: 25,
-            descending: true,
-            include_docs: true
-          };
-        }
-      },
-      // Element's scroll target
-      scrollTarget: {
-        type: Object,
-        value: function() {
-          return this.$.list;
-        }
-      },
-      /**
-       * Computed value. True if query ended and there's no results.
-       */
-      dataUnavailable: {
-        type: Boolean,
-        computed: '_computeDataUnavailable(hasItems, querying)'
-      },
-      // Event target for the model.
-      _eventTarget: {
-        type: Object,
-        value: function() {
-          return this;
-        }
-      }
-    },
     // Returns a handler to the datastore instance
     get _db() {
+      /* global PouchDB */
+      if (typeof PouchDB === 'undefined') {
+        console.error('PouchDB is not included into the application.');
+      }
       return new PouchDB('saved-requests');
-    },
+    }
 
-    observers: [
-      '_resetOnClosed(_isOpened)',
-    ],
+    constructor() {
+      super();
+      this._requestChanged = this._requestChanged.bind(this);
+      this._requestDeleted = this._requestDeleted.bind(this);
+      this.refresh = this.refresh.bind(this);
+      this._onDatabaseDestroy = this._onDatabaseDestroy.bind(this);
+      this._scrollHandler = this._scrollHandler.bind(this);
+    }
 
-    attached: function() {
-      this.listen(window, 'request-object-changed', '_requestChanged');
-      this.listen(window, 'request-object-deleted', '_requestDeleted');
-      this.listen(window, 'data-imported', 'refresh');
-      this.listen(window, 'datastore-destroyed', '_onDatabaseDestroy');
-    },
+    connectedCallback() {
+      super.connectedCallback();
+      window.addEventListener('request-object-changed', this._requestChanged);
+      window.addEventListener('request-object-deleted', this._requestDeleted);
+      window.addEventListener('data-imported', this.refresh);
+      window.addEventListener('datastore-destroyed', this._onDatabaseDestroy);
+      this.$.list.addEventListener('scroll', this._scrollHandler);
+      if (!this.querying && !this.items) {
+        this.makeQuery();
+      }
+    }
 
-    detached: function() {
-      this.unlisten(window, 'request-object-changed', '_requestChanged');
-      this.unlisten(window, 'request-object-deleted', '_requestDeleted');
-      this.unlisten(window, 'data-imported', 'refresh');
-      this.unlisten(window, 'datastore-destroyed', '_onDatabaseDestroy');
-    },
+    disconnectedCallback() {
+      window.removeEventListener('request-object-changed', this._requestChanged);
+      window.removeEventListener('request-object-deleted', this._requestDeleted);
+      window.removeEventListener('data-imported', this.refresh);
+      window.removeEventListener('datastore-destroyed', this._onDatabaseDestroy);
+      this.$.list.removeEventListener('scroll', this._scrollHandler);
+      super.disconnectedCallback();
+    }
     /**
      * Resets the state of the variables.
      */
-    reset: function() {
+    reset() {
       if (this.queryOptions) {
         delete this.queryOptions.startkey;
         delete this.queryOptions.skip;
       }
       this._setQuerying(false);
       this.set('items', undefined);
-    },
+    }
     /**
      * Refreshes the data from the datastore.
      * It resets the query options, clears items and makes a query to the datastore.
      */
-    refresh: function() {
+    refresh() {
       this.reset();
       this.makeQuery();
-    },
-
-    _resetOnClosed: function(_isOpened) {
-      if (_isOpened && !this.items && !this.querying) {
-        this.makeQuery();
-      }
-    },
+    }
     // Handler for the `request-object-changed`
-    _requestChanged: function(e) {
-      if ((!this.items && !this._isOpened) || e.cancelable) {
-        return;
-      }
-      if (e.detail.type !== 'saved-requests') {
+    _requestChanged(e) {
+      if (e.cancelable || e.detail.type !== 'saved-requests') {
         return;
       }
       this._processItemChanged(e.detail.oldId, e.detail.request);
-    },
+    }
     /**
      * Processes updated request / saved item.
      * If the request object is already on the list it will update the object.
@@ -318,43 +322,40 @@ Custom property | Description | Default
      * @param {String} id Database ID of updated object
      * @param {Object} doc Database object.
      */
-    _processItemChanged: function(id, doc) {
-      var items = this.items;
+    _processItemChanged(id, doc) {
+      const items = this.items;
       if (!items) {
         this.set('items', [doc]);
         return;
       }
-      let index = items.findIndex((item) => item._id === id);
+      const index = items.findIndex((item) => item._id === id);
       if (index !== -1) {
         this.set(['items', index], doc);
       } else {
-        this.push('items', doc);
+        this.unshift('items', doc);
       }
-    },
-
+    }
     // Hanlder for the `request-object-deleted` event. Removed item from list if found.
-    _requestDeleted: function(e) {
-      if ((!this.items && !this._isOpened) || e.cancelable) {
+    _requestDeleted(e) {
+      if (!this.items || e.cancelable || e.detail.type !== 'saved-requests') {
         return;
       }
-      if (e.detail.type !== 'saved-requests') {
-        return;
-      }
-      var id = e.detail.id;
-      var items = this.items;
+      const id = e.detail.id;
+      const items = this.items;
       if (!items || !items.length) {
         return;
       }
-      for (var i = 0, len = items.length; i < len; i++) {
+      for (let i = 0, len = items.length; i < len; i++) {
         if (items[i]._id === id) {
-          return this.splice('items', i, 1);
+          this.splice('items', i, 1);
+          return;
         }
       }
-    },
+    }
 
     // Handler for the `datastore-destroyed` custom event
-    _onDatabaseDestroy: function(e) {
-      var datastore = e.detail.datastore;
+    _onDatabaseDestroy(e) {
+      let datastore = e.detail.datastore;
       if (!datastore || !datastore.length) {
         return;
       }
@@ -366,38 +367,44 @@ Custom property | Description | Default
       }
       this._db.close()
       .then(() => this.refresh());
-    },
+    }
     // Computes value for the `hasItems` property.
-    _computeHasItems: function(length) {
+    _computeHasItems(length) {
       return !!(length);
-    },
-
+    }
     /**
      * Called every time the element changed it's scroll position. It will call the `makeQuery`
      * function when there's less than 120px left to scroll. (also it must be opened and must not
      * already querying).
      */
-    _scrollHandler: function() {
-      if (this.querying || !this._isOpened) {
+    _scrollHandler() {
+      if (this.querying) {
         return;
       }
-      var elm = this.scrollTarget;
-      var delta = elm.scrollHeight - (elm.scrollTop + elm.offsetHeight);
+      const elm = this.$.list;
+      const delta = elm.scrollHeight - (elm.scrollTop + elm.offsetHeight);
       if (delta < 120) {
         this.makeQuery();
       }
-    },
+    }
     /**
      * The function to call when new query for data is needed.
      */
-    makeQuery: function() {
-      this.debounce('menu-load-saved-page', this._loadPage, 75);
-    },
+    makeQuery() {
+      if (this.__makingQuery) {
+        return;
+      }
+      this.__makingQuery = true;
+      setTimeout(() => {
+        this.__makingQuery = false;
+        this._loadPage();
+      }, 75);
+    }
     /**
      * Performs the query and processes the result.
      */
-    _loadPage: function() {
-      var db = this._db;
+    _loadPage() {
+      const db = this._db;
       this._setQuerying(true);
       db.allDocs(this.queryOptions)
       .then((response) => {
@@ -406,25 +413,21 @@ Custom property | Description | Default
           // Set up pagination.
           this.queryOptions.startkey = response.rows[response.rows.length - 1].key;
           this.queryOptions.skip = 1;
-          let res = response.rows.map((item) => item.doc);
+          const res = response.rows.map((item) => item.doc);
           this._processQueryResults(res);
         }
       })
       .catch((e) => {
         this._setQuerying(false);
-        this.fire('app-log', {
-          message: ['Query menu items', e],
-          level: 'error'
-        });
         console.error('Query menu items', e);
       });
-    },
+    }
     /**
      * Processes query results to generate view data model.
      * @param {Array} res List of saved items retreived from the datastore.
      * @return {Array} Processed data items.
      */
-    _processQueryResults: function(docs) {
+    _processQueryResults(docs) {
       docs = docs.map((item) => {
         return {
           _id: item._id,
@@ -436,25 +439,27 @@ Custom property | Description | Default
       if (!this.items) {
         this.set('items', docs);
       } else {
-        docs.forEach((item) => {
-          this.push('items', item);
-        });
+        docs.forEach((item) => this.push('items', item));
       }
-    },
+      this.$.list.notifyResize();
+    }
     // Computes value for the `dataUnavailable` property.
-    _computeDataUnavailable: function(hasItems, querying) {
+    _computeDataUnavailable(hasItems, querying) {
       return !hasItems && !querying;
-    },
+    }
     // Handler for the `tap` event on the item.
-    _openSaved: function(e) {
-      var id = e.model.get('item._id');
-      this.fire('navigate', {
-        base: 'request',
-        type: 'saved',
-        id: id
-      });
-    },
-
+    _openSaved(e) {
+      const id = e.model.get('item._id');
+      this.dispatchEvent(new CustomEvent('navigate', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          base: 'request',
+          type: 'saved',
+          id: id
+        }
+      }));
+    }
     /**
      * Computes command label depending on a OS.
      * For Mac it will be cmd + `key` and for the rest of the World it
@@ -463,9 +468,9 @@ Custom property | Description | Default
      * @param {String} key The key combination as a sufix after the command key
      * @return {String} Full command to display in command label.
      */
-    _computeA11yCommand: function(key) {
-      var isMac = navigator.platform.indexOf('Mac') !== -1;
-      var cmd = '';
+    _computeA11yCommand(key) {
+      const isMac = navigator.platform.indexOf('Mac') !== -1;
+      let cmd = '';
       if (isMac) {
         cmd += 'meta+';
       } else {
@@ -473,7 +478,8 @@ Custom property | Description | Default
       }
       cmd += key;
       return cmd;
-    },
-  });
+    }
+  }
+  window.customElements.define(SavedMenu.is, SavedMenu);
   </script>
 </dom-module>

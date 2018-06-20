@@ -3,19 +3,19 @@ const DataGenerator = {};
 const methods = ['GET', 'PUT', 'POST', 'DELETE', 'PATCH', 'HEAD'];
 const methodsSize = methods.length - 1;
 
-var LAST_TIME = Date.now();
+let LAST_TIME = Date.now();
 
 DataGenerator.genRequestObject = function(projectData) {
-  var methodIndex = chance.integer({min: 0, max: methodsSize});
-  var url = chance.url();
-  var name = chance.sentence({words: 2});
+  const methodIndex = chance.integer({min: 0, max: methodsSize});
+  const url = chance.url();
+  const name = chance.sentence({words: 2});
   LAST_TIME -= chance.integer({min: 1.8e+6, max: 8.64e+7});
-  var method = methods[methodIndex];
-  var id = encodeURIComponent(name) + '/' + encodeURIComponent(url) + '/' + method;
+  const method = methods[methodIndex];
+  let id = encodeURIComponent(name) + '/' + encodeURIComponent(url) + '/' + method;
   if (projectData) {
     id += '/' + projectData;
   }
-  var obj = {
+  const obj = {
     _id: id,
     method: method,
     url: url,
@@ -31,23 +31,24 @@ DataGenerator.genRequestObject = function(projectData) {
   return obj;
 };
 
-DataGenerator.generateRequests = function(projectId, size) {
+DataGenerator.generateRequests = function(size, projectId) {
   size = size || 25;
-  var result = [];
-  for (var i = 0; i < size; i++) {
-    let projectData = chance.bool({likelihood: 5}) ? projectId : undefined;
+  const result = [];
+  for (let i = 0; i < size; i++) {
+    const projectData = chance.bool({likelihood: 5}) ? projectId : undefined;
     result.push(DataGenerator.genRequestObject(projectData));
   }
   return result;
 };
 
 DataGenerator.generateData = function(size) {
-  var requests = DataGenerator.generateRequests(size);
-  var db = new PouchDB('saved-requests');
+  const requests = DataGenerator.generateRequests(size);
+  /* global PouchDB */
+  const db = new PouchDB('saved-requests');
   return db.bulkDocs(requests);
 };
 
 DataGenerator.destroyData = function() {
-  var db = new PouchDB('saved-requests');
+  const db = new PouchDB('saved-requests');
   return db.destroy();
 };
