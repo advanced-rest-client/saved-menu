@@ -441,6 +441,14 @@ the License.
       } else {
         docs.forEach((item) => this.push('items', item));
       }
+      this.notifyResize();
+    }
+    /**
+     * Notifies the list that the resize event occurred.
+     * Should be called whhen content of the list changed but the list wasn't
+     * visible at the time.
+     */
+    notifyResize() {
       this.$.list.notifyResize();
     }
     // Computes value for the `dataUnavailable` property.
