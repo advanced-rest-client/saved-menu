@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
     <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
-    <script src="../demo/data-generator.js"></script>
+    <link rel="import" href="../../app-pouchdb/pouchdb.html">
+    <link rel="import" href="../../arc-data-generator/arc-data-generator.html">
     <script src="../../chance/dist/chance.min.js"></script>
     <link rel="import" href="../saved-menu.html">
-    <link rel="import" href="../../app-pouchdb/pouchdb.html">
   </head>
   <body>
 
@@ -19,15 +19,16 @@
     </test-fixture>
 
     <script>
-    /* global fixture, assert, DataGenerator, TestHelpers, MockInteractions */
+    /* global DataGenerator */
     suite('basic', function() {
-
       suiteSetup(function() {
-        return DataGenerator.generateData();
+        return DataGenerator.insertSavedRequestData({
+          requestsSize: 25
+        });
       });
 
       suiteTeardown(function() {
-        return DataGenerator.destroyData();
+        return DataGenerator.destroySavedRequestData();
       });
 
       let element;
@@ -77,18 +78,17 @@
       });
 
       function deleteRequest(id) {
-        const r = DataGenerator.generateRequests(1);
         const e = new CustomEvent('request-object-deleted', {
           bubbles: true,
           cancelable: false,
           composed: true,
           detail: {
-            type: 'saved-requests',
+            type: 'saved',
             id: id
           }
         });
         document.body.dispatchEvent(e);
-        return r[0];
+        return e;
       }
 
       test('Removes an item from the event', function() {

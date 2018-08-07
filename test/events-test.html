@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
     <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
-    <script src="../demo/data-generator.js"></script>
+    <link rel="import" href="../../app-pouchdb/pouchdb.html">
+    <link rel="import" href="../../arc-data-generator/arc-data-generator.html">
     <script src="../../chance/dist/chance.min.js"></script>
     <link rel="import" href="../saved-menu.html">
-    <link rel="import" href="../../app-pouchdb/pouchdb.html">
   </head>
   <body>
 
@@ -27,7 +27,7 @@
       });
 
       function dispatch(r) {
-        r = r || DataGenerator.generateRequests(1);
+        r = r || DataGenerator.generateSavedRequestData({requestsSize: 1}).requests;
         const e = new CustomEvent('request-object-changed', {
           bubbles: true,
           cancelable: false,
@@ -49,7 +49,7 @@
       });
 
       test('Updates existin item', function() {
-        element.items = DataGenerator.generateRequests(10);
+        element.items = DataGenerator.generateSavedRequestData({requestsSize: 10}).requests;
         const copy = Object.assign({}, element.items[0]);
         const newDate = Date.now();
         copy.updated = newDate;
@@ -61,11 +61,13 @@
 
     suite('Delete events', function() {
       suiteSetup(function() {
-        return DataGenerator.generateData();
+        return DataGenerator.insertSavedRequestData({
+          requestsSize: 25
+        });
       });
 
       suiteTeardown(function() {
-        return DataGenerator.destroyData();
+        return DataGenerator.destroySavedRequestData();
       });
 
       let element;

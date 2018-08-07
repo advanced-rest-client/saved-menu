@@ -33,7 +33,9 @@
     "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0",
     "chance": "^1.0.11",
     "paper-toast": "PolymerElements/paper-toast#^2.0.0",
-    "app-pouchdb": "PolymerElements/app-pouchdb#^2.0.0"
+    "app-pouchdb": "PolymerElements/app-pouchdb#^2.0.0",
+    "arc-models": "advanced-rest-client/arc-models#2.0.0-preview",
+    "arc-data-generator": "advanced-rest-client/arc-data-generator#^1.0.0"
   },
   "ignore": [
     "**/.*",

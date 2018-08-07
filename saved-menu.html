@@ -296,6 +296,7 @@ the License.
         delete this.queryOptions.startkey;
         delete this.queryOptions.skip;
       }
+      this._noMoreResults = false;
       this._setQuerying(false);
       this.set('items', undefined);
     }
@@ -309,7 +310,7 @@ the License.
     }
     // Handler for the `request-object-changed`
     _requestChanged(e) {
-      if (e.cancelable || e.detail.type !== 'saved-requests') {
+      if (e.cancelable || (e.detail.type !== 'saved-requests' && e.detail.type !== 'saved')) {
         return;
       }
       this._processItemChanged(e.detail.oldId, e.detail.request);
@@ -337,7 +338,8 @@ the License.
     }
     // Hanlder for the `request-object-deleted` event. Removed item from list if found.
     _requestDeleted(e) {
-      if (!this.items || e.cancelable || e.detail.type !== 'saved-requests') {
+      if (!this.items || e.cancelable || (e.detail.type !== 'saved-requests' &&
+        e.detail.type !== 'saved')) {
         return;
       }
       const id = e.detail.id;
@@ -378,7 +380,7 @@ the License.
      * already querying).
      */
     _scrollHandler() {
-      if (this.querying) {
+      if (this.querying || this.__makingQuery || this._noMoreResults) {
         return;
       }
       const elm = this.$.list;
@@ -398,7 +400,7 @@ the License.
       setTimeout(() => {
         this.__makingQuery = false;
         this._loadPage();
-      }, 75);
+      }, 100);
     }
     /**
      * Performs the query and processes the result.
@@ -415,6 +417,8 @@ the License.
           this.queryOptions.skip = 1;
           const res = response.rows.map((item) => item.doc);
           this._processQueryResults(res);
+        } else {
+          this._noMoreResults = true;
         }
       })
       .catch((e) => {
@@ -424,8 +428,7 @@ the License.
     }
     /**
      * Processes query results to generate view data model.
-     * @param {Array} res List of saved items retreived from the datastore.
-     * @return {Array} Processed data items.
+     * @param {Array} docs List of saved items retreived from the datastore.
      */
     _processQueryResults(docs) {
       docs = docs.map((item) => {
