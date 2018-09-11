@@ -44,18 +44,18 @@
 
       test('Appends an item', function() {
         dispatch();
-        assert.isTrue(element.hasItems);
-        assert.lengthOf(element.items, 1);
+        assert.isTrue(element.hasRequests);
+        assert.lengthOf(element.requests, 1);
       });
 
       test('Updates existin item', function() {
-        element.items = DataGenerator.generateSavedRequestData({requestsSize: 10}).requests;
-        const copy = Object.assign({}, element.items[0]);
+        element.requests = DataGenerator.generateSavedRequestData({requestsSize: 10}).requests;
+        const copy = Object.assign({}, element.requests[0]);
         const newDate = Date.now();
         copy.updated = newDate;
         dispatch([copy]);
-        assert.lengthOf(element.items, 10);
-        assert.equal(element.items[0].updated, newDate);
+        assert.lengthOf(element.requests, 10);
+        assert.equal(element.requests[0].updated, newDate);
       });
     });
 
@@ -73,7 +73,7 @@
       let element;
       setup(function(done) {
         element = fixture('basic');
-        element.addEventListener('has-items-changed', function(e) {
+        element.addEventListener('has-requests-changed', function(e) {
           if (e.detail.value) {
             done();
           }
@@ -81,7 +81,7 @@
       });
 
       function dispatch() {
-        const r = element.items[0];
+        const r = element.requests[0];
         const e = new CustomEvent('request-object-deleted', {
           bubbles: true,
           cancelable: false,
@@ -95,13 +95,13 @@
         return r[0];
       }
 
-      test('Has 25 items', function() {
-        assert.lengthOf(element.items, 25);
+      test('Has 25 requests', function() {
+        assert.lengthOf(element.requests, 25);
       });
 
       test('Removes an item', function() {
         dispatch();
-        assert.lengthOf(element.items, 24);
+        assert.lengthOf(element.requests, 24);
       });
     });
     </script>

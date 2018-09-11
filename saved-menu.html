@@ -18,6 +18,8 @@ the License.
 <link rel="import" href="../paper-progress/paper-progress.html">
 <link rel="import" href="../iron-list/iron-list.html">
 <link rel="import" href="../http-method-label/http-method-label.html">
+<link rel="import" href="../requests-list-mixin/requests-list-mixin.html">
+
 <dom-module id="saved-menu">
   <template>
     <style>
@@ -111,7 +113,7 @@ the License.
         <p class="empty-info">Use <span class="code">[[_computeA11yCommand('s')]]</span> to save a request. It will appear in this place.</p>
       </div>
     </template>
-    <iron-list items="[[items]]" id="list" hidden$="[[!hasItems]]">
+    <iron-list items="[[requests]]" id="list" hidden$="[[!hasRequests]]">
       <template>
         <div data-index$="[[index]]" title$="[[item.url]]">
           <paper-icon-item on-tap="_openSaved">
@@ -130,11 +132,11 @@ the License.
   </template>
   <script>
   /**
-   * A list of saved items in the ARC main menu.
+   * A list of saved requests in the ARC main menu.
    *
    * The element uses direct implementation of the PouchDB to make a query to the
    * datastore. It also listens to events fired by the `arc-models/request-model`
-   * element to update state of the saved items.
+   * element to update state of the saved requests.
    *
    * ### Example
    *
@@ -153,10 +155,9 @@ the License.
    * - `request` (`Object`) - Updated request object. Note, if `_id` of the
    * object changed this should be a copy of the object. Otherwise it won't
    * be possible to recognise old object on the list.
-   * - `oldId` (`String`) - The `_id` property of the item from before the change.
    *
-   * Note: `items` list does not contain full request object. Don't use array
-   * of this items to update request object.
+   * Note: `requests` list does not contain full request object. Don't use this
+   * objects to update request object.
    *
    * #### request-object-deleted
    *
@@ -186,39 +187,27 @@ the License.
    * ----------------|-------------|----------
    * `--saved-menu` | Mixin applied to the element | `{}`
    * `--saved-menu-background-color` | Background color of the menu | `#f7f7f7`
-   * `--saved-menu-focused-post-method-color` | Font color of focused item POST
-   * method label | `rgb(33, 150, 243)`
+   * `--saved-menu-focused-post-method-color` | Font color of focused item POST method label | `rgb(33, 150, 243)`
    * `--saved-menu-list` | Mixin applied to the list element. | `{}`
    * `--saved-menu-list-item` | Mixin applied to each list item | `{}`
    * `--saved-menu-name-label` | Mixin applied to the name label | `{}`
    * `--arc-menu-empty-info-color` | Color applied to the empty info section | ``
-   * `--arc-menu-empty-info-title-color` | Color applied to the title in the
-   * empty info section | ``
+   * `--arc-menu-empty-info-title-color` | Color applied to the title in the empty info section | ``
    *
    * @polymer
    * @customElement
    * @memberof UiElements
    * @demo demo/index.html
+   * @appliesMixin ArcComponents.RequestsListMixin
    */
-  class SavedMenu extends Polymer.Element {
+  class SavedMenu extends ArcComponents.RequestsListMixin(Polymer.Element) {
     static get is() {return 'saved-menu';}
     static get properties() {
       return {
-        /**
-         * Saved items restored from the datastore.
-         */
-        items: Array,
         // True when the element is querying the database for the data.
         querying: {
           type: Boolean,
           readOnly: true,
-          notify: true
-        },
-        // Computed value, true if the `items` property has values.
-        hasItems: {
-          type: Boolean,
-          value: false,
-          computed: '_computeHasItems(items.length)',
           notify: true
         },
         /**
@@ -245,7 +234,7 @@ the License.
          */
         dataUnavailable: {
           type: Boolean,
-          computed: '_computeDataUnavailable(hasItems, querying)'
+          computed: '_computeDataUnavailable(hasRequests, querying)'
         }
       };
     }
@@ -261,8 +250,6 @@ the License.
 
     constructor() {
       super();
-      this._requestChanged = this._requestChanged.bind(this);
-      this._requestDeleted = this._requestDeleted.bind(this);
       this.refresh = this.refresh.bind(this);
       this._onDatabaseDestroy = this._onDatabaseDestroy.bind(this);
       this._scrollHandler = this._scrollHandler.bind(this);
@@ -270,19 +257,18 @@ the License.
 
     connectedCallback() {
       super.connectedCallback();
-      window.addEventListener('request-object-changed', this._requestChanged);
-      window.addEventListener('request-object-deleted', this._requestDeleted);
+      if (!this.type) {
+        this.type = 'saved';
+      }
       window.addEventListener('data-imported', this.refresh);
       window.addEventListener('datastore-destroyed', this._onDatabaseDestroy);
       this.$.list.addEventListener('scroll', this._scrollHandler);
-      if (!this.querying && !this.items) {
+      if (!this.querying && !this.requests) {
         this.makeQuery();
       }
     }
 
     disconnectedCallback() {
-      window.removeEventListener('request-object-changed', this._requestChanged);
-      window.removeEventListener('request-object-deleted', this._requestDeleted);
       window.removeEventListener('data-imported', this.refresh);
       window.removeEventListener('datastore-destroyed', this._onDatabaseDestroy);
       this.$.list.removeEventListener('scroll', this._scrollHandler);
@@ -298,63 +284,16 @@ the License.
       }
       this._noMoreResults = false;
       this._setQuerying(false);
-      this.set('items', undefined);
+      this.set('requests', undefined);
     }
     /**
      * Refreshes the data from the datastore.
-     * It resets the query options, clears items and makes a query to the datastore.
+     * It resets the query options, clears `requests` and makes a query to the datastore.
      */
     refresh() {
       this.reset();
       this.makeQuery();
     }
-    // Handler for the `request-object-changed`
-    _requestChanged(e) {
-      if (e.cancelable || (e.detail.type !== 'saved-requests' && e.detail.type !== 'saved')) {
-        return;
-      }
-      this._processItemChanged(e.detail.oldId, e.detail.request);
-    }
-    /**
-     * Processes updated request / saved item.
-     * If the request object is already on the list it will update the object.
-     * Otherwise the object will be added to the list.
-     *
-     * @param {String} id Database ID of updated object
-     * @param {Object} doc Database object.
-     */
-    _processItemChanged(id, doc) {
-      const items = this.items;
-      if (!items) {
-        this.set('items', [doc]);
-        return;
-      }
-      const index = items.findIndex((item) => item._id === id);
-      if (index !== -1) {
-        this.set(['items', index], doc);
-      } else {
-        this.unshift('items', doc);
-      }
-    }
-    // Hanlder for the `request-object-deleted` event. Removed item from list if found.
-    _requestDeleted(e) {
-      if (!this.items || e.cancelable || (e.detail.type !== 'saved-requests' &&
-        e.detail.type !== 'saved')) {
-        return;
-      }
-      const id = e.detail.id;
-      const items = this.items;
-      if (!items || !items.length) {
-        return;
-      }
-      for (let i = 0, len = items.length; i < len; i++) {
-        if (items[i]._id === id) {
-          this.splice('items', i, 1);
-          return;
-        }
-      }
-    }
-
     // Handler for the `datastore-destroyed` custom event
     _onDatabaseDestroy(e) {
       let datastore = e.detail.datastore;
@@ -369,10 +308,6 @@ the License.
       }
       this._db.close()
       .then(() => this.refresh());
-    }
-    // Computes value for the `hasItems` property.
-    _computeHasItems(length) {
-      return !!(length);
     }
     /**
      * Called every time the element changed it's scroll position. It will call the `makeQuery`
@@ -423,12 +358,12 @@ the License.
       })
       .catch((e) => {
         this._setQuerying(false);
-        console.error('Query menu items', e);
+        console.error('Query menu requests', e);
       });
     }
     /**
      * Processes query results to generate view data model.
-     * @param {Array} docs List of saved items retreived from the datastore.
+     * @param {Array} docs List of saved requests retreived from the datastore.
      */
     _processQueryResults(docs) {
       docs = docs.map((item) => {
@@ -439,10 +374,10 @@ the License.
           url: item.url
         };
       });
-      if (!this.items) {
-        this.set('items', docs);
+      if (!this.requests) {
+        this.set('requests', docs);
       } else {
-        docs.forEach((item) => this.push('items', item));
+        docs.forEach((item) => this.push('requests', item));
       }
       this.notifyResize();
     }
@@ -455,8 +390,8 @@ the License.
       this.$.list.notifyResize();
     }
     // Computes value for the `dataUnavailable` property.
-    _computeDataUnavailable(hasItems, querying) {
-      return !hasItems && !querying;
+    _computeDataUnavailable(hasRequests, querying) {
+      return !hasRequests && !querying;
     }
     // Handler for the `tap` event on the item.
     _openSaved(e) {

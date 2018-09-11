@@ -28,7 +28,7 @@
     <section>
       <saved-menu id="menu"></saved-menu>
     </section>
-    <button id="generate">Generate 100 items</button>
+    <button id="generate">Generate 100 requests</button>
     <button id="delete">Clear list</button>
     <button id="refresh">Refresh list</button>
     <button id="changed">Inform first item changed</button>
@@ -51,7 +51,7 @@
       });
     });
     document.getElementById('delete').addEventListener('click', function() {
-      DataGenerator.destroyData()
+      DataGenerator.destroySavedRequestData()
       .then(() => {
         document.getElementById('delToast').opened = true;
         let e = new CustomEvent('datastore-destroyed', {
@@ -64,24 +64,21 @@
       });
     });
     document.getElementById('changed').addEventListener('click', function() {
-      let item = document.getElementById('menu').items[0];
+      let item = document.getElementById('menu').requests[0];
       item = Object.assign({}, item);
       item.name = 'Changed to: ' + chance.sentence({words: 2});
-      let id = item._id;
-      item._id += '/test';
-      let e = new CustomEvent('request-object-changed', {
+      const e = new CustomEvent('request-object-changed', {
         detail: {
           request: item,
-          type: 'saved-requests',
-          oldId: id
+          type: 'saved'
         },
         bubbles: true
       });
       document.body.dispatchEvent(e);
     });
     document.getElementById('deleted').addEventListener('click', function() {
-      let item = document.getElementById('menu').items[0];
-      let e = new CustomEvent('request-object-deleted', {
+      const item = document.getElementById('menu').requests[0];
+      const e = new CustomEvent('request-object-deleted', {
         detail: {
           oldRev: item._rev,
           id: item._id,
