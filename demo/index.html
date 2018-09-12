@@ -7,38 +7,80 @@
   <title>saved-menu demo</title>
   <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
   <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
-  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+  <link rel="import" href="../../polymer/lib/elements/dom-bind.html">
+  <link rel="import" href="../../shadycss/apply-shim.html">
+  <link rel="import" href="../../polymer/lib/elements/custom-style.html">
   <link rel="import" href="../../paper-toast/paper-toast.html">
   <link rel="import" href="../../app-pouchdb/pouchdb.html">
   <link rel="import" href="../../arc-models/request-model.html">
   <link rel="import" href="../../arc-data-generator/arc-data-generator.html">
+  <link rel="import" href="../../paper-dropdown-menu/paper-dropdown-menu.html">
+  <link rel="import" href="../../paper-item/paper-item.html">
+  <link rel="import" href="../../paper-button/paper-button.html">
+  <link rel="import" href="../../paper-listbox/paper-listbox.html">
+  <link rel="import" href="../../neon-animation/web-animations.html">
   <script src="../../chance/dist/chance.min.js"></script>
   <link rel="import" href="../saved-menu.html">
   <custom-style>
     <style is="custom-style" include="demo-pages-shared-styles">
+    html,
+    body {
+      background-color: #e5e5e5;
+      margin: 0;
+      padding: 0;
+    }
+
     saved-menu {
       height: 600px;
+    }
+
+    .card {
+      @apply --shadow-elevation-4dp;
+      padding: 20px;
+      box-sizing: border-box;
+      background-color: #fff;
+      margin-top: 20px;
+      margin-bottom: 20px;
     }
     </style>
   </custom-style>
 </head>
 <body unresolved>
-  <div class="vertical-section-container centered">
-    <h3>The `saved-menu`</h3>
-    <section>
-      <saved-menu id="menu"></saved-menu>
-    </section>
-    <button id="generate">Generate 100 requests</button>
-    <button id="delete">Clear list</button>
-    <button id="refresh">Refresh list</button>
-    <button id="changed">Inform first item changed</button>
-    <button id="deleted">Inform first item deleted</button>
-    <script>
-    /* global chance */
-    document.getElementById('refresh').addEventListener('click', function() {
+  <dom-bind id="demo">
+    <template is="dom-bind">
+      <section class="centered card">
+        <saved-menu id="menu" list-type="[[listType]]"></saved-menu>
+      </section>
+
+      <section class="centered card">
+        <paper-button on-click="generate">Generate 100 requests</paper-button>
+        <paper-button on-click="delete">Clear list</paper-button>
+        <paper-button on-click="refresh">Refresh list</paper-button>
+        <paper-button on-click="changed">Inform first item changed</paper-button>
+        <paper-button on-click="deleted">Inform first item deleted</paper-button>
+
+        <paper-dropdown-menu label="Select list type">
+          <paper-listbox slot="dropdown-content" attr-for-selected="data-value" selected="{{listType}}">
+            <paper-item data-value="default">Default</paper-item>
+            <paper-item data-value="comfortable">Comfortable</paper-item>
+            <paper-item data-value="compact">Compact</paper-item>
+          </paper-listbox>
+        </paper-dropdown-menu>
+      </section>
+
+      <paper-toast id="genToast" text="The request data has been generated"></paper-toast>
+      <paper-toast id="delToast" text="The request data has been removed"></paper-toast>
+      <paper-toast id="navToast" text="Navigation ocurred"></paper-toast>
+    </template>
+  </dom-bind>
+  <script>
+  /* global chance */
+  (function(scope) {
+    scope.refresh = function() {
       document.querySelector('saved-menu').refresh();
-    });
-    document.getElementById('generate').addEventListener('click', function() {
+    };
+
+    scope.generate = function() {
       DataGenerator.insertSavedRequestData({
         requestsSize: 100
       })
@@ -49,8 +91,9 @@
         });
         document.body.dispatchEvent(e);
       });
-    });
-    document.getElementById('delete').addEventListener('click', function() {
+    };
+
+    scope.delete = function() {
       DataGenerator.destroySavedRequestData()
       .then(() => {
         document.getElementById('delToast').opened = true;
@@ -62,8 +105,9 @@
         });
         document.body.dispatchEvent(e);
       });
-    });
-    document.getElementById('changed').addEventListener('click', function() {
+    };
+
+    scope.changed = function() {
       let item = document.getElementById('menu').requests[0];
       item = Object.assign({}, item);
       item.name = 'Changed to: ' + chance.sentence({words: 2});
@@ -75,29 +119,25 @@
         bubbles: true
       });
       document.body.dispatchEvent(e);
-    });
-    document.getElementById('deleted').addEventListener('click', function() {
+    };
+
+    scope.deleted = function() {
       const item = document.getElementById('menu').requests[0];
       const e = new CustomEvent('request-object-deleted', {
         detail: {
           oldRev: item._rev,
           id: item._id,
-          type: 'saved-requests'
+          type: 'saved'
         },
         bubbles: true
       });
       document.body.dispatchEvent(e);
+    };
+    /* global DataGenerator */
+    window.addEventListener('navigate', function() {
+      document.getElementById('navToast').opened = true;
     });
-    </script>
-  </div>
-  <paper-toast id="genToast" text="The request data has been generated"></paper-toast>
-  <paper-toast id="delToast" text="The request data has been removed"></paper-toast>
-  <paper-toast id="navToast" text="Navigation ocurred"></paper-toast>
-  <script>
-  /* global DataGenerator */
-  window.addEventListener('navigate', function() {
-    document.getElementById('navToast').opened = true;
-  });
+  })(document.getElementById('demo'));
   </script>
 </body>
 </html>

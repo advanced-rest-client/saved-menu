@@ -19,40 +19,18 @@ the License.
 <link rel="import" href="../iron-list/iron-list.html">
 <link rel="import" href="../http-method-label/http-method-label.html">
 <link rel="import" href="../requests-list-mixin/requests-list-mixin.html">
+<link rel="import" href="../requests-list-mixin/requests-list-styles.html">
 
 <dom-module id="saved-menu">
   <template>
-    <style>
+    <style include="requests-list-styles">
     :host {
       display: block;
       background-color: var(--saved-menu-background-color, inherit);
       position: relative;
-
-      --paper-item-icon-width: 72px;
-
       @apply --layout-flex;
       @apply --layout-vertical;
       @apply --saved-menu;
-    }
-
-    paper--icon-item:focus http-method-label[method="post"] {
-      color: var(--saved-menu-selected-post-method-color, #fff);
-    }
-
-    .iron-selected paper-icon-item:focus http-method-label[method="post"] {
-      color: var(--saved-menu-focused-post-method-color, rgb(33, 150, 243));
-    }
-
-    http-method-label {
-      font-size: 14px;
-      height: 52px;
-      width: 52px;
-      text-align: center;
-      padding-top: 14px;
-      box-sizing: border-box;
-      border-radius: 50%;
-      text-overflow: ellipsis;
-      overflow: hidden;
     }
 
     iron-list {
@@ -60,18 +38,7 @@ the License.
       @apply --saved-menu-list;
     }
 
-    paper-icon-item {
-      @apply --arc-font-menu;
-      font-weight: 400;
-      min-height: 36px;
-      cursor: pointer;
-      @apply --saved-menu-list-item;
-    }
-
     .name {
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
       font-size: 14px;
       @apply --saved-menu-name-label;
     }
@@ -113,15 +80,13 @@ the License.
         <p class="empty-info">Use <span class="code">[[_computeA11yCommand('s')]]</span> to save a request. It will appear in this place.</p>
       </div>
     </template>
-    <iron-list items="[[requests]]" id="list" hidden$="[[!hasRequests]]">
+    <iron-list items="[[requests]]" id="list" hidden$="[[!hasRequests]]" role="listbox">
       <template>
         <div data-index$="[[index]]" title$="[[item.url]]">
           <paper-icon-item on-tap="_openSaved">
-            <http-method-label method="[[item.method]]" slot="item-icon"></http-method-label>
-            <paper-item-body two-line>
-              <div>
-                <span class="name">[[item.name]]</span>
-              </div>
+            <http-method-label method="[[item.method]]" title$="[[item.method]]" slot="item-icon"></http-method-label>
+            <paper-item-body two-line$="[[_hasTwoLines]]">
+              <div class="name">[[item.name]]</div>
               <div secondary>[[item.url]]</div>
               <paper-ripple></paper-ripple>
             </paper-item-body>
@@ -387,6 +352,9 @@ the License.
      * visible at the time.
      */
     notifyResize() {
+      if (!this.$ || !this.$.list) {
+        return;
+      }
       this.$.list.notifyResize();
     }
     // Computes value for the `dataUnavailable` property.
