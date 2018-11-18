@@ -20,7 +20,7 @@ the License.
 <link rel="import" href="../http-method-label/http-method-label.html">
 <link rel="import" href="../requests-list-mixin/requests-list-mixin.html">
 <link rel="import" href="../requests-list-mixin/requests-list-styles.html">
-
+<link rel="import" href="../saved-list-mixin/saved-list-mixin.html">
 <dom-module id="saved-menu">
   <template>
     <style include="requests-list-styles">
@@ -83,7 +83,7 @@ the License.
     <iron-list items="[[requests]]" id="list" hidden$="[[!hasRequests]]" role="listbox">
       <template>
         <div data-index$="[[index]]" title$="[[item.url]]">
-          <paper-icon-item on-tap="_openSaved">
+          <paper-icon-item on-click="_openSaved">
             <http-method-label method="[[item.method]]" title$="[[item.method]]" slot="item-icon"></http-method-label>
             <paper-item-body two-line$="[[_hasTwoLines]]">
               <div class="name">[[item.name]]</div>
@@ -164,115 +164,25 @@ the License.
    * @memberof UiElements
    * @demo demo/index.html
    * @appliesMixin ArcComponents.RequestsListMixin
+   * @appliesMixin ArcComponents.SavedListMixin
    */
-  class SavedMenu extends ArcComponents.RequestsListMixin(Polymer.Element) {
+  class SavedMenu extends ArcComponents.SavedListMixin(
+    ArcComponents.RequestsListMixin(Polymer.Element)) {
     static get is() {return 'saved-menu';}
-    static get properties() {
-      return {
-        // True when the element is querying the database for the data.
-        querying: {
-          type: Boolean,
-          readOnly: true,
-          notify: true
-        },
-        /**
-         * Database query options for pagination.
-         * Override this value to change the query options like limit of the results in one call.
-         *
-         * This is query options passed to the PouchDB `allDocs` function. Note that it will not
-         * set `include_docs` option. A conviniet shortcut is to set the the `includeDocs` property
-         * and the directive will be added automatically.
-         */
-        queryOptions: {
-          type: Object,
-          readOnly: true,
-          value() {
-            return {
-              limit: 25,
-              descending: true,
-              include_docs: true
-            };
-          }
-        },
-        /**
-         * Computed value. True if query ended and there's no results.
-         */
-        dataUnavailable: {
-          type: Boolean,
-          computed: '_computeDataUnavailable(hasRequests, querying)'
-        }
-      };
-    }
-
-    // Returns a handler to the datastore instance
-    get _db() {
-      /* global PouchDB */
-      if (typeof PouchDB === 'undefined') {
-        console.error('PouchDB is not included into the application.');
-      }
-      return new PouchDB('saved-requests');
-    }
 
     constructor() {
       super();
-      this.refresh = this.refresh.bind(this);
-      this._onDatabaseDestroy = this._onDatabaseDestroy.bind(this);
       this._scrollHandler = this._scrollHandler.bind(this);
     }
 
     connectedCallback() {
       super.connectedCallback();
-      if (!this.type) {
-        this.type = 'saved';
-      }
-      window.addEventListener('data-imported', this.refresh);
-      window.addEventListener('datastore-destroyed', this._onDatabaseDestroy);
       this.$.list.addEventListener('scroll', this._scrollHandler);
-      if (!this.querying && !this.requests) {
-        this.makeQuery();
-      }
     }
 
     disconnectedCallback() {
-      window.removeEventListener('data-imported', this.refresh);
-      window.removeEventListener('datastore-destroyed', this._onDatabaseDestroy);
       this.$.list.removeEventListener('scroll', this._scrollHandler);
       super.disconnectedCallback();
-    }
-    /**
-     * Resets the state of the variables.
-     */
-    reset() {
-      if (this.queryOptions) {
-        delete this.queryOptions.startkey;
-        delete this.queryOptions.skip;
-      }
-      this._noMoreResults = false;
-      this._setQuerying(false);
-      this.set('requests', undefined);
-    }
-    /**
-     * Refreshes the data from the datastore.
-     * It resets the query options, clears `requests` and makes a query to the datastore.
-     */
-    refresh() {
-      this.reset();
-      this.makeQuery();
-    }
-    // Handler for the `datastore-destroyed` custom event
-    _onDatabaseDestroy(e) {
-      let datastore = e.detail.datastore;
-      if (!datastore || !datastore.length) {
-        return;
-      }
-      if (typeof datastore === 'string') {
-        datastore = [datastore];
-      }
-      if (datastore.indexOf('saved-requests') === -1 && datastore[0] !== 'all') {
-        return;
-      }
-      this._db.close()
-      .then(() => this.refresh());
     }
     /**
      * Called every time the element changed it's scroll position. It will call the `makeQuery`
@@ -280,71 +190,7 @@ the License.
      * already querying).
      */
     _scrollHandler() {
-      if (this.querying || this.__makingQuery || this._noMoreResults) {
-        return;
-      }
-      const elm = this.$.list;
-      const delta = elm.scrollHeight - (elm.scrollTop + elm.offsetHeight);
-      if (delta < 120) {
-        this.makeQuery();
-      }
-    }
-    /**
-     * The function to call when new query for data is needed.
-     */
-    makeQuery() {
-      if (this.__makingQuery) {
-        return;
-      }
-      this.__makingQuery = true;
-      setTimeout(() => {
-        this.__makingQuery = false;
-        this._loadPage();
-      }, 100);
-    }
-    /**
-     * Performs the query and processes the result.
-     */
-    _loadPage() {
-      const db = this._db;
-      this._setQuerying(true);
-      db.allDocs(this.queryOptions)
-      .then((response) => {
-        this._setQuerying(false);
-        if (response && response.rows.length > 0) {
-          // Set up pagination.
-          this.queryOptions.startkey = response.rows[response.rows.length - 1].key;
-          this.queryOptions.skip = 1;
-          const res = response.rows.map((item) => item.doc);
-          this._processQueryResults(res);
-        } else {
-          this._noMoreResults = true;
-        }
-      })
-      .catch((e) => {
-        this._setQuerying(false);
-        console.error('Query menu requests', e);
-      });
-    }
-    /**
-     * Processes query results to generate view data model.
-     * @param {Array} docs List of saved requests retreived from the datastore.
-     */
-    _processQueryResults(docs) {
-      docs = docs.map((item) => {
-        return {
-          _id: item._id,
-          name: item.name,
-          method: item.method,
-          url: item.url
-        };
-      });
-      if (!this.requests) {
-        this.set('requests', docs);
-      } else {
-        docs.forEach((item) => this.push('requests', item));
-      }
-      this.notifyResize();
+      this.loadNext();
     }
     /**
      * Notifies the list that the resize event occurred.
@@ -357,19 +203,19 @@ the License.
       }
       this.$.list.notifyResize();
     }
-    // Computes value for the `dataUnavailable` property.
-    _computeDataUnavailable(hasRequests, querying) {
-      return !hasRequests && !querying;
-    }
-    // Handler for the `tap` event on the item.
+    /**
+     * Handler for the `tap` event on the item.
+     * @param {CustomEvent} e
+     */
     _openSaved(e) {
       const id = e.model.get('item._id');
       this.dispatchEvent(new CustomEvent('navigate', {
         bubbles: true,
         composed: true,
+        cancelable: true,
         detail: {
           base: 'request',
-          type: 'saved',
+          type: this.type,
           id: id
         }
       }));

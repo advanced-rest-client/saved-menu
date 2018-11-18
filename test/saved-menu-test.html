@@ -1,0 +1,231 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../../chance/dist/chance.min.js"></script>
+    <link rel="import" href="../../app-pouchdb/pouchdb.html">
+    <link rel="import" href="../../arc-models/request-model.html">
+    <link rel="import" href="../../arc-models/project-model.html">
+    <link rel="import" href="../../arc-data-generator/arc-data-generator.html">
+    <link rel="import" href="../saved-menu.html">
+  </head>
+  <body>
+
+    <test-fixture id="Basic">
+      <template>
+        <saved-menu no-auto></saved-menu>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="Models">
+      <template>
+        <request-model></request-model>
+        <project-model></project-model>
+        <saved-menu></saved-menu>
+      </template>
+    </test-fixture>
+
+    <script>
+    suite('saved-menu', function() {
+      suite('_computeA11yCommand()', () => {
+        let element;
+        setup(function() {
+          element = fixture('Basic');
+        });
+
+        test('Returns passed letter with CMD/CTRL', () => {
+          const result = element._computeA11yCommand('s');
+          assert.isTrue(/(meta|ctrl)\+s/.test(result));
+        });
+      });
+
+      suite('notifyResize()', () => {
+        test('Do nothing when DOM is not initialized', () => {
+          const element = fixture('Basic');
+          element.notifyResize();
+        });
+
+        test('Calls list\'s notifyResize', (done) => {
+          const element = fixture('Basic');
+          flush(() => {
+            const list = element.$.list;
+            let called = false;
+            list.notifyResize = () => called = true;
+            element.notifyResize();
+            assert.isTrue(called);
+            done();
+          });
+        });
+      });
+
+      suite('_scrollHandler()', () => {
+        let element;
+        setup(function() {
+          element = fixture('Basic');
+        });
+
+        test('Calls loadNext() when called', () => {
+          let called = false;
+          element.loadNext = () => called = true;
+          element._scrollHandler();
+          assert.isTrue(called);
+        });
+      });
+
+      suite('_openSaved()', () => {
+        let element;
+        let eModel;
+        setup(function() {
+          element = fixture('Basic');
+          eModel = {
+            model: {
+              get() {
+                return 'test';
+              }
+            }
+          };
+        });
+
+        test('Dispatches navigate event', () => {
+          const spy = sinon.spy();
+          element.addEventListener('navigate', spy);
+          element._openSaved(eModel);
+          assert.isTrue(spy.called);
+        });
+
+        test('The event has base', () => {
+          let data;
+          element.addEventListener('navigate', function f(e) {
+            element.removeEventListener('navigate', f);
+            data = e.detail;
+          });
+          element._openSaved(eModel);
+          assert.equal(data.base, 'request');
+        });
+
+        test('The event has type', () => {
+          let data;
+          element.addEventListener('navigate', function f(e) {
+            element.removeEventListener('navigate', f);
+            data = e.detail;
+          });
+          element._openSaved(eModel);
+          assert.equal(data.type, 'saved');
+        });
+
+        test('The event has id', () => {
+          let data;
+          element.addEventListener('navigate', function f(e) {
+            element.removeEventListener('navigate', f);
+            data = e.detail;
+          });
+          element._openSaved(eModel);
+          assert.equal(data.id, 'test');
+        });
+
+        test('The event bubbles', () => {
+          let data;
+          element.addEventListener('navigate', function f(e) {
+            element.removeEventListener('navigate', f);
+            data = e;
+          });
+          element._openSaved(eModel);
+          assert.isTrue(data.bubbles);
+        });
+
+        test('The event is composed', () => {
+          let data;
+          element.addEventListener('navigate', function f(e) {
+            element.removeEventListener('navigate', f);
+            data = e;
+          });
+          element._openSaved(eModel);/* global DataGenerator */
+          assert.isTrue(data.composed);
+        });
+
+        test('The event is cancelable', () => {
+          let data;
+          element.addEventListener('navigate', function f(e) {
+            element.removeEventListener('navigate', f);
+            data = e;
+          });
+          element._openSaved(eModel);
+          assert.isTrue(data.cancelable);
+        });
+      });
+    });
+    /* global DataGenerator */
+    suite('DOM manipulation', () => {
+      function doneAfterQuery(element, done) {
+        element.addEventListener('querying-changed', function f(e) {
+          console.log('aaaaaaaaaaaa');
+          if (e.detail.value) {
+            return;
+          }
+          element.removeEventListener('querying-changed', f);
+          flush(() => done());
+        });
+      }
+
+      suite('No data', () => {
+        suiteSetup(() => {
+          return DataGenerator.destroySavedRequestData();
+        });
+
+        let element;
+        setup((done) => {
+          element = fixture('Models')[2];
+          doneAfterQuery(element, done);
+        });
+
+        test('hasRequests is false', () => {
+          assert.isFalse(element.hasRequests);
+        });
+
+        test('empty message is rendered', () => {
+          const node = element.shadowRoot.querySelector('.empty-message');
+          assert.ok(node);
+        });
+
+        test('The list is hidden', () => {
+          assert.isTrue(element.$.list.hasAttribute('hidden'));
+        });
+      });
+
+      suite('With data', () => {
+        suiteSetup(() => {
+          return DataGenerator.insertSavedRequestData();
+        });
+
+        suiteTeardown(() => {
+          return DataGenerator.destroySavedRequestData();
+        });
+
+        let element;
+        setup((done) => {
+          element = fixture('Models')[2];
+          doneAfterQuery(element, done);
+        });
+
+        test('hasRequests is true', () => {
+          assert.isTrue(element.hasRequests);
+        });
+
+        test('empty message is not rendered', () => {
+          const node = element.shadowRoot.querySelector('.empty-message');
+          const display = getComputedStyle(node).display;
+          assert.equal(display, 'none');
+        });
+
+        test('The list is visible hidden', () => {
+          assert.isFalse(element.$.list.hasAttribute('hidden'));
+        });
+      });
+    });
+    </script>
+
+  </body>
+</html>
