@@ -7,9 +7,9 @@
 A list of saved items in the ARC main menu
 
 ```html
-<saved-menu></saved-menu>
+<saved-menu style="heigth: 500px;"></saved-menu>
 ```
 
 ### API components
 
-This components is a part of API components ecosystem: https://elements.advancedrestclient.com/
+This components is a part of [API components ecosystem](https://elements.advancedrestclient.com/)
