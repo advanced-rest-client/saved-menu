@@ -59,6 +59,15 @@
             done();
           });
         });
+
+        test('Do nothing when DOM not ready', () => {
+          const element = fixture('Basic');
+          const old = element.$;
+          element.$ = undefined;
+          element.notifyResize();
+          element.$ = old;
+          // no error
+        });
       });
 
       suite('_scrollHandler()', () => {
