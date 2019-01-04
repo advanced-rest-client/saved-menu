@@ -1,7 +1,7 @@
 {
   "name": "saved-menu",
   "description": "A list of saved items in the ARC main menu",
-  "version": "2.0.0-preview",
+  "version": "2.0.0",
   "license": "Apache-2.0",
   "authors": [
     "Pawel Psztyc",
@@ -36,12 +36,12 @@
     "chance": "^1.0.11",
     "paper-toast": "PolymerElements/paper-toast#^2.0.0",
     "app-pouchdb": "PolymerElements/app-pouchdb#^2.0.0",
-    "arc-models": "advanced-rest-client/arc-models#2.0.0-preview",
     "arc-data-generator": "advanced-rest-client/arc-data-generator#^1.0.0",
     "web-animations-js": "web-animations/web-animations-js#^2.3",
     "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^2.0.3",
     "paper-listbox": "PolymerElements/paper-listbox#^2.0.0",
     "paper-button": "PolymerElements/paper-button#^2.0.0",
+    "arc-models": "advanced-rest-client/arc-models#2.0.0-preview",
     "arc-electron-default-theme": "advanced-rest-client/arc-electron-default-theme#2.0.0-preview"
   },
   "ignore": [
