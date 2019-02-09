@@ -21,6 +21,7 @@
   <link rel="import" href="../../paper-listbox/paper-listbox.html">
   <link rel="import" href="../../neon-animation/web-animations.html">
   <link rel="import" href="../../arc-data-generator/arc-data-generator.html">
+  <link rel="import" href="../../paper-toggle-button/paper-toggle-button.html">
   <link rel="import" href="../saved-menu.html">
   <link rel="import" href="../../arc-electron-default-theme/arc-electron-default-theme.html">
   <custom-style>
@@ -44,6 +45,23 @@
       margin-top: 20px;
       margin-bottom: 20px;
     }
+
+    #dragOutput {
+      display: block;
+      padding: 8px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      background-color: #FFF8E1;
+    }
+
+    .drop-target {
+      border: 2px transparent dashed;
+      box-sizing: border-box;
+    }
+
+    .drop-target.drag-over {
+      border-color: #8BC34A;
+    }
     </style>
   </custom-style>
 </head>
@@ -51,8 +69,15 @@
   <dom-bind id="demo">
     <template is="dom-bind">
       <section class="centered card">
-        <saved-menu id="menu" list-type="[[listType]]"></saved-menu>
+        <saved-menu id="menu" list-type="[[listType]]" draggable-enabled="[[draggableEnabled]]"></saved-menu>
       </section>
+
+      <template is="dom-if" if="[[draggableEnabled]]">
+        <section class="centered card drop-target" on-dragover="_dragoverHandler" on-dragleave="_dragleaveHandler" on-drop="_dropHandler">
+          Drop request here
+          <output id="dragOutput" hidden></output>
+        </section>
+      </template>
 
       <section class="centered card">
         <paper-button on-click="generate">Generate 100 requests</paper-button>
@@ -61,6 +86,7 @@
         <paper-button on-click="changed">Inform first item changed</paper-button>
         <paper-button on-click="deleted">Inform first item deleted</paper-button>
         <paper-button on-click="addNew">Add new saved item</paper-button>
+        <paper-toggle-button checked="{{draggableEnabled}}">Enable experimental item draggable</paper-toggle-button>
 
         <paper-dropdown-menu label="Select list type">
           <paper-listbox slot="dropdown-content" attr-for-selected="data-value" selected="{{listType}}">
@@ -81,6 +107,29 @@
   <script>
   /* global DataGenerator, chance */
   (function(scope) {
+    scope._dragoverHandler = function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'link';
+      e.currentTarget.classList.add('drag-over');
+    };
+
+    scope._dragleaveHandler = function(e) {
+      e.currentTarget.classList.remove('drag-over');
+    };
+
+    scope._dropHandler = function(e) {
+      e.preventDefault();
+      const data = e.dataTransfer.getData('arc/request-object');
+      // format data
+      const request = JSON.parse(data);
+      console.log(request);
+      const out = document.getElementById('dragOutput');
+      out.innerText = JSON.stringify(request, null, 2);
+      if (out.hasAttribute('hidden')) {
+        out.removeAttribute('hidden');
+      }
+      e.currentTarget.classList.remove('drag-over');
+    };
     scope.refresh = function() {
       document.querySelector('saved-menu').refresh();
     };

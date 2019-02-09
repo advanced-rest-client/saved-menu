@@ -83,11 +83,11 @@ the License.
     <iron-list items="[[requests]]" id="list" hidden$="[[!hasRequests]]" role="listbox">
       <template>
         <div data-index$="[[index]]" title$="[[item.url]]">
-          <paper-icon-item on-click="_openSaved">
+          <paper-icon-item on-click="_openSaved" class="request-list-item" draggable$="[[_computeDraggableValue(draggableEnabled)]]" on-dragstart="_dragStart">
             <http-method-label method="[[item.method]]" title$="[[item.method]]" slot="item-icon"></http-method-label>
             <paper-item-body two-line$="[[_hasTwoLines]]">
-              <div class="name">[[item.name]]</div>
-              <div secondary>[[item.url]]</div>
+              <div class="name select-text">[[item.name]]</div>
+              <div secondary class="select-text">[[item.url]]</div>
               <paper-ripple></paper-ripple>
             </paper-item-body>
           </paper-icon-item>
@@ -168,7 +168,20 @@ the License.
    */
   class SavedMenu extends ArcComponents.SavedListMixin(
     ArcComponents.RequestsListMixin(Polymer.Element)) {
-    static get is() {return 'saved-menu';}
+    static get is() {
+      return 'saved-menu';
+    }
+
+    static get properties() {
+      return {
+        /**
+         * Adds draggable property to the request list item element.
+         * The `dataTransfer` object has `arc/request-object` mime type with
+         * serialized JSON with request model.
+         */
+        draggableEnabled: {type: Boolean, value: false}
+      };
+    }
 
     constructor() {
       super();
@@ -230,6 +243,31 @@ the License.
       }
       cmd += key;
       return cmd;
+    }
+    /**
+     * Handler for the `dragstart` event added to the list item when `draggableEnabled`
+     * is set to true.
+     * This function sets request data on the `dataTransfer` object with `arc/request-object`
+     * mime type. The request data is a serialized JSON with request model.
+     * @param {Event} e
+     */
+    _dragStart(e) {
+      if (!this.draggableEnabled) {
+        return;
+      }
+      const data = JSON.stringify(e.model.get('item'));
+      e.dataTransfer.setData('arc/request-object', data);
+      e.dropEffect = 'copy';
+    }
+    /**
+     * Computes value for the `draggable` property of the list item.
+     * When `draggableEnabled` is set it returns true which is one of the
+     * conditions to enable drag and drop on an element.
+     * @param {Boolean} draggableEnabled Current value of `draggableEnabled`
+     * @return {String} `true` or `false` (as string) depending on the argument.
+     */
+    _computeDraggableValue(draggableEnabled) {
+      return draggableEnabled ? 'true' : 'false';
     }
   }
   window.customElements.define(SavedMenu.is, SavedMenu);
