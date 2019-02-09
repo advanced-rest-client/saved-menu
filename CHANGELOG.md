@@ -1,3 +1,15 @@
+<a name="2.0.0"></a>
+# [2.0.0](https://github.com/advanced-rest-client/saved-menu/compare/0.1.15...2.0.0) (2019-01-04)
+
+
+### Update
+
+* Adding ArcComponents.SavedListMixin ([dccff3e571568d6c1445b4303e90f263c7b5ce70](https://github.com/advanced-rest-client/saved-menu/commit/dccff3e571568d6c1445b4303e90f263c7b5ce70))
+* Adding requests mixing with common methods ([2d3172f757781447a59b4c08f2cbae50447c4039](https://github.com/advanced-rest-client/saved-menu/commit/2d3172f757781447a59b4c08f2cbae50447c4039))
+* Updating component for new data model ([e63c1e265c28c40aaa231763dfffd06a82d9d375](https://github.com/advanced-rest-client/saved-menu/commit/e63c1e265c28c40aaa231763dfffd06a82d9d375))
+
+
+
 <a name="0.1.16"></a>
 ## [0.1.16](https://github.com/advanced-rest-client/saved-menu/compare/0.1.15...0.1.16) (2018-02-24)
 
