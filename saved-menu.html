@@ -177,6 +177,7 @@ the License.
 
     connectedCallback() {
       super.connectedCallback();
+      this.type = 'saved';
       this.$.list.addEventListener('scroll', this._scrollHandler);
     }
 
@@ -209,16 +210,7 @@ the License.
      */
     _openSaved(e) {
       const id = e.model.get('item._id');
-      this.dispatchEvent(new CustomEvent('navigate', {
-        bubbles: true,
-        composed: true,
-        cancelable: true,
-        detail: {
-          base: 'request',
-          type: this.type,
-          id: id
-        }
-      }));
+      this._openRequest(id);
     }
     /**
      * Computes command label depending on a OS.
