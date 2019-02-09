@@ -1,7 +1,7 @@
 {
   "name": "saved-menu",
   "description": "A list of saved items in the ARC main menu",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "license": "Apache-2.0",
   "authors": [
     "Pawel Psztyc",
@@ -25,7 +25,9 @@
     "iron-list": "PolymerElements/iron-list#^2.0.0",
     "http-method-label": "advanced-rest-client/http-method-label#^2.0.0",
     "requests-list-mixin": "advanced-rest-client/requests-list-mixin#^2.0.0",
-    "saved-list-mixin": "advanced-rest-client/saved-list-mixin#^2.0.0"
+    "saved-list-mixin": "advanced-rest-client/saved-list-mixin#^2.0.0",
+    "iron-icon": "PolymerElements/iron-icon#^2.0.0",
+    "arc-icons": "advanced-rest-client/arc-icons#^2.0.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^3.0.1",
@@ -43,7 +45,8 @@
     "paper-button": "PolymerElements/paper-button#^2.0.0",
     "paper-toggle-button": "PolymerElements/paper-toggle-button#^2.0.0",
     "arc-models": "advanced-rest-client/arc-models#2.0.0-preview",
-    "arc-electron-default-theme": "advanced-rest-client/arc-electron-default-theme#2.0.0-preview"
+    "arc-electron-default-theme": "advanced-rest-client/arc-electron-default-theme#2.0.0-preview",
+    "history-menu": "advanced-rest-client/history-menu#^2.0.0"
   },
   "ignore": [
     "**/.*",

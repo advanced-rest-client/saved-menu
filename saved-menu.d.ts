@@ -10,6 +10,7 @@
 
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
 
 /// <reference path="../polymer/types/polymer-element.d.ts" />
 /// <reference path="../paper-item/paper-icon-item.d.ts" />
@@ -21,6 +22,8 @@
 /// <reference path="../requests-list-mixin/requests-list-mixin.d.ts" />
 /// <reference path="../requests-list-mixin/requests-list-styles.d.ts" />
 /// <reference path="../saved-list-mixin/saved-list-mixin.d.ts" />
+/// <reference path="../iron-icon/iron-icon.d.ts" />
+/// <reference path="../arc-icons/arc-icons.d.ts" />
 
 declare namespace UiElements {
 
@@ -100,6 +103,9 @@ declare namespace UiElements {
     draggableEnabled: boolean|null|undefined;
     connectedCallback(): void;
     disconnectedCallback(): void;
+    _draggableChanged(value: any): void;
+    _addDndEvents(): void;
+    _removeDndEvents(): void;
 
     /**
      * Called every time the element changed it's scroll position. It will call the `makeQuery`
@@ -147,6 +153,34 @@ declare namespace UiElements {
      * @returns `true` or `false` (as string) depending on the argument.
      */
     _computeDraggableValue(draggableEnabled: Boolean|null): String|null;
+
+    /**
+     * Handler for `dragover` event on this element. If the dagged item is compatible
+     * it renders drop message.
+     */
+    _dragoverHandler(e: DragEvent|null): void;
+
+    /**
+     * Handler for `dragleave` event on this element. If the dagged item is compatible
+     * it hides drop message.
+     */
+    _dragleaveHandler(e: DragEvent|null): void;
+
+    /**
+     * Handler for `drag` event on this element. If the dagged item is compatible
+     * it adds request to saved requests.
+     */
+    _dropHandler(e: DragEvent|null): void;
+
+    /**
+     * Dispatches (by calling `_dispatch() function`) `save-request` event
+     * which is handled by request model to create new request.
+     * The function do not need to do anything else since request change listeners
+     * will insert the request to the list when saved.
+     *
+     * @param request The request to store.
+     */
+    _appendRequest(request: object|null): CustomEvent|null;
   }
 }
 

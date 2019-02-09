@@ -21,6 +21,8 @@ the License.
 <link rel="import" href="../requests-list-mixin/requests-list-mixin.html">
 <link rel="import" href="../requests-list-mixin/requests-list-styles.html">
 <link rel="import" href="../saved-list-mixin/saved-list-mixin.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../arc-icons/arc-icons.html">
 <dom-module id="saved-menu">
   <template>
     <style include="requests-list-styles">
@@ -72,8 +74,37 @@ the License.
     [hidden] {
       display: none !important;
     }
+
+    .drop-message {
+      display: none;
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      background-color: rgba(255, 255, 255, 0.84);
+      z-index: 10;
+      @apply --layout-center-center;
+      @apply --arc-font-body1;
+      color: var(--primary-color);
+      border: 2px var(--primary-color) dashed;
+      font-size: 18px;
+    }
+
+    .drop-icon {
+      width: 72px;
+      height: 72px;
+    }
+
+    :host(.drop-target) .drop-message {
+      @apply --layout-vertical;
+    }
     </style>
     <paper-progress hidden$="[[!querying]]" indeterminate></paper-progress>
+    <div class="drop-message">
+      <iron-icon icon="arc:save-alt" class="drop-icon"></iron-icon>
+      <p>Drop request here</p>
+    </div>
     <template is="dom-if" if="[[dataUnavailable]]">
       <div class="empty-message">
         <h3 class="empty-title">Save a request and recall it from here</h3>
@@ -179,24 +210,59 @@ the License.
          * The `dataTransfer` object has `arc/request-object` mime type with
          * serialized JSON with request model.
          */
-        draggableEnabled: {type: Boolean, value: false}
+        draggableEnabled: {type: Boolean, value: false, observer: '_draggableChanged'}
       };
     }
 
     constructor() {
       super();
       this._scrollHandler = this._scrollHandler.bind(this);
+      this._dragoverHandler = this._dragoverHandler.bind(this);
+      this._dragleaveHandler = this._dragleaveHandler.bind(this);
+      this._dropHandler = this._dropHandler.bind(this);
     }
 
     connectedCallback() {
       super.connectedCallback();
       this.type = 'saved';
       this.$.list.addEventListener('scroll', this._scrollHandler);
+      if (this.draggableEnabled) {
+        this._addDndEvents();
+      }
     }
 
     disconnectedCallback() {
       this.$.list.removeEventListener('scroll', this._scrollHandler);
       super.disconnectedCallback();
+      this._removeDndEvents();
+    }
+
+    _draggableChanged(value) {
+      if (value) {
+        this._addDndEvents();
+      } else {
+        this._removeDndEvents();
+      }
+    }
+
+    _addDndEvents() {
+      if (this.__dndAdded) {
+        return;
+      }
+      this.__dndAdded = true;
+      this.addEventListener('dragover', this._dragoverHandler);
+      this.addEventListener('dragleave', this._dragleaveHandler);
+      this.addEventListener('drop', this._dropHandler);
+    }
+
+    _removeDndEvents() {
+      if (!this.__dndAdded) {
+        return;
+      }
+      this.__dndAdded = false;
+      this.removeEventListener('dragover', this._dragoverHandler);
+      this.removeEventListener('dragleave', this._dragleaveHandler);
+      this.removeEventListener('drop', this._dropHandler);
     }
     /**
      * Called every time the element changed it's scroll position. It will call the `makeQuery`
@@ -255,9 +321,12 @@ the License.
       if (!this.draggableEnabled) {
         return;
       }
-      const data = JSON.stringify(e.model.get('item'));
+      const request = e.model.get('item');
+      const data = JSON.stringify(request);
       e.dataTransfer.setData('arc/request-object', data);
-      e.dropEffect = 'copy';
+      e.dataTransfer.setData('arc/saved-request', request._id);
+      e.dataTransfer.setData('arc-source/saved-menu', request._id);
+      e.dataTransfer.effectAllowed = 'copyMove';
     }
     /**
      * Computes value for the `draggable` property of the list item.
@@ -268,6 +337,85 @@ the License.
      */
     _computeDraggableValue(draggableEnabled) {
       return draggableEnabled ? 'true' : 'false';
+    }
+    /**
+     * Handler for `dragover` event on this element. If the dagged item is compatible
+     * it renders drop message.
+     * @param {DragEvent} e
+     */
+    _dragoverHandler(e) {
+      if (!this.draggableEnabled) {
+        return;
+      }
+      if (e.dataTransfer.types.indexOf('arc/request-object') === -1 ||
+        e.dataTransfer.types.indexOf('arc/saved-request') !== -1) {
+        return;
+      }
+      e.dataTransfer.dropEffect = 'copy';
+      e.preventDefault();
+      if (!this.classList.contains('drop-target')) {
+        this.classList.add('drop-target');
+      }
+    }
+    /**
+     * Handler for `dragleave` event on this element. If the dagged item is compatible
+     * it hides drop message.
+     * @param {DragEvent} e
+     */
+    _dragleaveHandler(e) {
+      if (!this.draggableEnabled) {
+        return;
+      }
+      if (e.dataTransfer.types.indexOf('arc/request-object') === -1 ||
+        e.dataTransfer.types.indexOf('arc/saved-request') !== -1) {
+        return;
+      }
+      e.preventDefault();
+      if (this.classList.contains('drop-target')) {
+        this.classList.remove('drop-target');
+      }
+    }
+    /**
+     * Handler for `drag` event on this element. If the dagged item is compatible
+     * it adds request to saved requests.
+     * @param {DragEvent} e
+     */
+    _dropHandler(e) {
+      if (!this.draggableEnabled) {
+        return;
+      }
+      if (e.dataTransfer.types.indexOf('arc/request-object') === -1 ||
+        e.dataTransfer.types.indexOf('arc/saved-request') !== -1) {
+        return;
+      }
+      e.preventDefault();
+      if (this.classList.contains('drop-target')) {
+        this.classList.remove('drop-target');
+      }
+      const data = e.dataTransfer.getData('arc/request-object');
+      if (!data) {
+        return;
+      }
+      const request = JSON.parse(data);
+      this._appendRequest(request);
+    }
+    /**
+     * Dispatches (by calling `_dispatch() function`) `save-request` event
+     * which is handled by request model to create new request.
+     * The function do not need to do anything else since request change listeners
+     * will insert the request to the list when saved.
+     * @param {Object} request The request to store.
+     * @return {CustomEvent}
+     */
+    _appendRequest(request) {
+      delete request._rev;
+      delete request._id;
+      if (!request.name) {
+        request.name = 'Unnamed';
+      }
+      return this._dispatch('save-request', {
+        request
+      });
     }
   }
   window.customElements.define(SavedMenu.is, SavedMenu);
