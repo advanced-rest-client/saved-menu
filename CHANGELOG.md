@@ -156,3 +156,23 @@
 
 
 
+## [2.0.1](https://github.com/advanced-rest-client/saved-menu/compare/0.1.15...2.0.1) (2019-02-09)
+
+
+### Docs
+
+* Updating Polymer docs ([184d1e0fd8426707b0d7767ee2ca53f449f20bba](https://github.com/advanced-rest-client/saved-menu/commit/184d1e0fd8426707b0d7767ee2ca53f449f20bba))
+
+### New
+
+* Adding draggable support ([a79116d67ef7e3363725f3407495936f8da99efa](https://github.com/advanced-rest-client/saved-menu/commit/a79116d67ef7e3363725f3407495936f8da99efa))
+
+### Update
+
+* Adding ArcComponents.SavedListMixin ([dccff3e571568d6c1445b4303e90f263c7b5ce70](https://github.com/advanced-rest-client/saved-menu/commit/dccff3e571568d6c1445b4303e90f263c7b5ce70))
+* Adding requests mixing with common methods ([2d3172f757781447a59b4c08f2cbae50447c4039](https://github.com/advanced-rest-client/saved-menu/commit/2d3172f757781447a59b4c08f2cbae50447c4039))
+* Updating component for new data model ([e63c1e265c28c40aaa231763dfffd06a82d9d375](https://github.com/advanced-rest-client/saved-menu/commit/e63c1e265c28c40aaa231763dfffd06a82d9d375))
+* Updating to new version of requests list mixin ([d196a4ce74ffa0d3057df34c3d9a633820d2b5f5](https://github.com/advanced-rest-client/saved-menu/commit/d196a4ce74ffa0d3057df34c3d9a633820d2b5f5))
+
+
+
