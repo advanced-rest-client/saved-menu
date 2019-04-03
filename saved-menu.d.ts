@@ -5,25 +5,12 @@
  *   https://github.com/Polymer/tools/tree/master/packages/gen-typescript-declarations
  *
  * To modify these typings, edit the source file(s):
- *   saved-menu.html
+ *   saved-menu.js
  */
 
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
 // tslint:disable:no-any describes the API as best we are able today
-
-/// <reference path="../polymer/types/polymer-element.d.ts" />
-/// <reference path="../paper-item/paper-icon-item.d.ts" />
-/// <reference path="../paper-item/paper-item-body.d.ts" />
-/// <reference path="../paper-ripple/paper-ripple.d.ts" />
-/// <reference path="../paper-progress/paper-progress.d.ts" />
-/// <reference path="../iron-list/iron-list.d.ts" />
-/// <reference path="../http-method-label/http-method-label.d.ts" />
-/// <reference path="../requests-list-mixin/requests-list-mixin.d.ts" />
-/// <reference path="../requests-list-mixin/requests-list-styles.d.ts" />
-/// <reference path="../saved-list-mixin/saved-list-mixin.d.ts" />
-/// <reference path="../iron-icon/iron-icon.d.ts" />
-/// <reference path="../arc-icons/arc-icons.d.ts" />
 
 declare namespace UiElements {
 
@@ -91,8 +78,8 @@ declare namespace UiElements {
    * `--arc-menu-empty-info-title-color` | Color applied to the title in the empty info section | ``
    */
   class SavedMenu extends
-    ArcComponents.RequestsListMixin(
-    ArcComponents.SavedListMixin(
+    RequestsListMixin(
+    SavedListMixin(
     Object)) {
 
     /**
@@ -184,6 +171,11 @@ declare namespace UiElements {
   }
 }
 
-interface HTMLElementTagNameMap {
-  "saved-menu": UiElements.SavedMenu;
+declare global {
+
+  interface HTMLElementTagNameMap {
+    "saved-menu": UiElements.SavedMenu;
+  }
 }
+
+export {};
