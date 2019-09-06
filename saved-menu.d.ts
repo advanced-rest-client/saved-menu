@@ -12,6 +12,26 @@
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
 // tslint:disable:no-any describes the API as best we are able today
 
+import {LitElement, html, css} from 'lit-element';
+
+import {RequestsListMixin} from '@advanced-rest-client/requests-list-mixin/requests-list-mixin.js';
+
+import {SavedListMixin} from '@advanced-rest-client/saved-list-mixin/saved-list-mixin.js';
+
+import {AnypointMenuMixin} from '@anypoint-web-components/anypoint-menu-mixin/anypoint-menu-mixin.js';
+
+declare class SavedMenuWrapper {
+  render(): any;
+}
+
+declare global {
+
+  interface HTMLElementTagNameMap {
+    "saved-menu-wrapper": SavedMenuWrapper;
+    "saved-menu": UiElements.SavedMenu;
+  }
+}
+
 declare namespace UiElements {
 
   /**
@@ -81,6 +101,7 @@ declare namespace UiElements {
     RequestsListMixin(
     SavedListMixin(
     Object)) {
+    readonly _list: any;
 
     /**
      * Adds draggable property to the request list item element.
@@ -88,8 +109,24 @@ declare namespace UiElements {
      * serialized JSON with request model.
      */
     draggableEnabled: boolean|null|undefined;
+
+    /**
+     * Database ID of the selected item.
+     */
+    selectedItem: string|null|undefined;
+
+    /**
+     * Enables compatibility with Anypoint platform
+     */
+    compatibility: boolean|null|undefined;
+    _dropTargetTemplate(): any;
+    _unavailableTemplate(): any;
+    _listTemplate(): any;
+    render(): any;
     connectedCallback(): void;
     disconnectedCallback(): void;
+    firstUpdated(): void;
+    _addScrollEvent(): void;
     _draggableChanged(value: any): void;
     _addDndEvents(): void;
     _removeDndEvents(): void;
@@ -100,13 +137,6 @@ declare namespace UiElements {
      * already querying).
      */
     _scrollHandler(): void;
-
-    /**
-     * Notifies the list that the resize event occurred.
-     * Should be called whhen content of the list changed but the list wasn't
-     * visible at the time.
-     */
-    notifyResize(): void;
 
     /**
      * Handler for the `tap` event on the item.
@@ -130,16 +160,6 @@ declare namespace UiElements {
      * mime type. The request data is a serialized JSON with request model.
      */
     _dragStart(e: Event|null): void;
-
-    /**
-     * Computes value for the `draggable` property of the list item.
-     * When `draggableEnabled` is set it returns true which is one of the
-     * conditions to enable drag and drop on an element.
-     *
-     * @param draggableEnabled Current value of `draggableEnabled`
-     * @returns `true` or `false` (as string) depending on the argument.
-     */
-    _computeDraggableValue(draggableEnabled: Boolean|null): String|null;
 
     /**
      * Handler for `dragover` event on this element. If the dagged item is compatible
@@ -170,12 +190,3 @@ declare namespace UiElements {
     _appendRequest(request: object|null): CustomEvent|null;
   }
 }
-
-declare global {
-
-  interface HTMLElementTagNameMap {
-    "saved-menu": UiElements.SavedMenu;
-  }
-}
-
-export {};

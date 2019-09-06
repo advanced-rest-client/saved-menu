@@ -11,19 +11,24 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 */
-import {PolymerElement} from '../../@polymer/polymer/polymer-element.js';
-import '../../@polymer/paper-item/paper-icon-item.js';
-import '../../@polymer/paper-item/paper-item-body.js';
-import '../../@polymer/paper-ripple/paper-ripple.js';
-import '../../@polymer/paper-progress/paper-progress.js';
-import '../../@polymer/iron-list/iron-list.js';
-import '../../@api-components/http-method-label/http-method-label.js';
-import {RequestsListMixin} from '../../@advanced-rest-client/requests-list-mixin/requests-list-mixin.js';
-import '../../@advanced-rest-client/requests-list-mixin/requests-list-styles.js';
-import {SavedListMixin} from '../../@advanced-rest-client/saved-list-mixin/saved-list-mixin.js';
-import '../../@polymer/iron-icon/iron-icon.js';
-import '../../@advanced-rest-client/arc-icons/arc-icons.js';
-import {html} from '../../@polymer/polymer/lib/utils/html-tag.js';
+import { LitElement, html, css } from 'lit-element';
+import { RequestsListMixin } from '@advanced-rest-client/requests-list-mixin/requests-list-mixin.js';
+import { SavedListMixin } from '@advanced-rest-client/saved-list-mixin/saved-list-mixin.js';
+import styles from '@advanced-rest-client/requests-list-mixin/requests-list-styles.js';
+import '@anypoint-web-components/anypoint-item/anypoint-icon-item.js';
+import '@anypoint-web-components/anypoint-item/anypoint-item-body.js';
+import '@polymer/paper-progress/paper-progress.js';
+import '@api-components/http-method-label/http-method-label.js';
+import '@polymer/iron-icon/iron-icon.js';
+import '@advanced-rest-client/arc-icons/arc-icons.js';
+import { AnypointMenuMixin } from '@anypoint-web-components/anypoint-menu-mixin/anypoint-menu-mixin.js';
+
+class SavedMenuWrapper extends AnypointMenuMixin(LitElement) {
+  render() {
+    return html`<slot></slot>`;
+  }
+}
+window.customElements.define('saved-menu-wrapper', SavedMenuWrapper);
 /**
  * A list of saved requests in the ARC main menu.
  *
@@ -87,123 +92,210 @@ import {html} from '../../@polymer/polymer/lib/utils/html-tag.js';
  * `--arc-menu-empty-info-color` | Color applied to the empty info section | ``
  * `--arc-menu-empty-info-title-color` | Color applied to the title in the empty info section | ``
  *
- * @polymer
  * @customElement
  * @memberof UiElements
  * @demo demo/index.html
  * @appliesMixin RequestsListMixin
  * @appliesMixin SavedListMixin
  */
-class SavedMenu extends SavedListMixin(RequestsListMixin(PolymerElement)) {
-  static get template() {
-    return html`<style include="requests-list-styles">
-    :host {
-      display: block;
-      background-color: var(--saved-menu-background-color, inherit);
-      position: relative;
-      @apply --layout-flex;
-      @apply --layout-vertical;
-    }
+class SavedMenu extends SavedListMixin(RequestsListMixin(LitElement)) {
+  static get styles() {
+    return [
+      styles,
+      css`:host {
+        display: block;
+        background-color: var(--saved-menu-background-color, inherit);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
 
-    iron-list {
-      flex: 1 1 auto;
-    }
+      .list {
+        overflow: auto;
+      }
 
-    .name {
-      font-size: 14px;
-    }
+      .name {
+        font-size: 14px;
+      }
 
-    paper-progress {
-      width: calc(100% - 32px);
-      margin: 0 16px;
-      position: absolute;
-    }
+      paper-progress {
+        width: calc(100% - 32px);
+        margin: 0 16px;
+        position: absolute;
+      }
 
-    .empty-info {
-      @apply --arc-font-body1;
-      font-style: italic;
-      margin: 1em 16px;
-      color: var(--arc-menu-empty-info-color);
-    }
+      .empty-info {
+        font-size: var(--arc-font-body1-font-size);
+        font-weight: var(--arc-font-body1-font-weight);
+        line-height: var(--arc-font-body1-line-height);
+        font-style: italic;
+        margin: 1em 16px;
+        color: var(--arc-menu-empty-info-color);
+      }
 
-    .empty-title {
-      @apply --paper-font-title;
-      white-space: normal;
-      color: var(--arc-menu-empty-info-title-color);
-    }
+      .empty-title {
+        white-space: var(--arc-font-nowrap-white-space);
+        overflow: var(--arc-font-nowrap-overflow);
+        text-overflow: var(--arc-font-nowrap-text-overflow);
+        font-size: var(--arc-font-title-font-size);
+        font-weight: var(--arc-font-title-font-weight);
+        line-height: var(--arc-font-title-line-height);
+        white-space: normal;
+        color: var(--arc-menu-empty-info-title-color);
+      }
 
-    .empty-message {
-      @apply --layout-flex;
-      @apply --layout-vertical;
-      @apply --layout-center-center;
-      text-align: center;
-    }
+      .empty-message {
+        flex: 1;
+        flex-basis: 0.000000001px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
 
-    [hidden] {
-      display: none !important;
-    }
+      .empty-state-image {
+        width: 180px;
+        height: 120px;
+      }
 
-    .drop-message {
-      display: none;
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      background-color: rgba(255, 255, 255, 0.84);
-      z-index: 10;
-      @apply --layout-center-center;
-      @apply --arc-font-body1;
-      color: var(--primary-color);
-      border: 2px var(--primary-color) dashed;
-      font-size: 18px;
-    }
+      [hidden] {
+        display: none !important;
+      }
 
-    .drop-icon {
-      width: 72px;
-      height: 72px;
-    }
+      .selected {
+        color: var(--primary-color);
+      }
 
-    :host(.drop-target) .drop-message {
-      @apply --layout-vertical;
-    }
-    </style>
-    <paper-progress hidden\$="[[!querying]]" indeterminate=""></paper-progress>
-    <div class="drop-message">
+      .drop-message {
+        display: none;
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background-color: rgba(255, 255, 255, 0.84);
+        z-index: 10;
+        justify-content: center;
+        align-items: center;
+        color: var(--primary-color);
+        border: 2px var(--primary-color) dashed;
+        font-size: 18px;
+      }
+
+      .drop-icon {
+        width: 72px;
+        height: 72px;
+      }
+
+      :host(.drop-target) .drop-message {
+        display: flex;
+        flex-direction: column;
+      }`
+    ];
+  }
+
+  _dropTargetTemplate() {
+    return html`<div class="drop-message">
       <iron-icon icon="arc:save-alt" class="drop-icon"></iron-icon>
       <p>Drop request here</p>
-    </div>
-    <template is="dom-if" if="[[dataUnavailable]]">
-      <div class="empty-message">
-        <h3 class="empty-title">Save a request and recall it from here</h3>
-        <p class="empty-info">Use <span class="code">[[_computeA11yCommand('s')]]</span> to save a request. It will appear in this place.</p>
-      </div>
-    </template>
-    <iron-list items="[[requests]]" id="list" hidden\$="[[!hasRequests]]" role="listbox">
-      <template>
-        <div data-index\$="[[index]]" title\$="[[item.url]]">
-          <paper-icon-item on-click="_openSaved" class="request-list-item" draggable\$="[[_computeDraggableValue(draggableEnabled)]]" on-dragstart="_dragStart">
-            <http-method-label method="[[item.method]]" title\$="[[item.method]]" slot="item-icon"></http-method-label>
-            <paper-item-body two-line\$="[[_hasTwoLines]]">
-              <div class="name select-text">[[item.name]]</div>
-              <div secondary="" class="select-text">[[item.url]]</div>
-              <paper-ripple></paper-ripple>
-            </paper-item-body>
-          </paper-icon-item>
-        </div>
-      </template>
-    </iron-list>`;
+    </div>`;
+  }
+
+  _unavailableTemplate() {
+    const cmd = this._computeA11yCommand('s');
+    return html`<div class="empty-message">
+      <h3 class="empty-title">
+        Save a request and recall it from here
+      </h3>
+      <p class="empty-info">
+        Use <span class="code">${cmd}</span> to save a request.
+        It will appear in this place.
+      </p>
+    </div>`;
+  }
+
+  _listTemplate() {
+    const items = this.requests || [];
+    const { draggableEnabled, _hasTwoLines, compatibility } = this;
+    return items.map((item, index) => html`
+      <anypoint-icon-item
+        data-index="${index}"
+        data-id="${item._id}"
+        @click="${this._openSaved}"
+        class="request-list-item"
+        draggable="${draggableEnabled ? 'true' : 'false'}"
+        @dragstart="${this._dragStart}"
+        tabindex="-1"
+        title="${item.url}"
+        role="menuitem"
+        ?legacy="${compatibility}">
+        <http-method-label
+          method="${item.method}"
+          title="${item.method}"
+          slot="item-icon"></http-method-label>
+        <anypoint-item-body
+          ?twoline="${_hasTwoLines}"
+          ?legacy="${compatibility}">
+          <div class="name select-text">${item.name}</div>
+          <div secondary class="select-text">${item.url}</div>
+        </anypoint-item-body>
+      </anypoint-icon-item>`);
+  }
+
+  render() {
+    const { dataUnavailable, hasRequests, querying, selectedItem } = this;
+    return html`
+    ${this.modelTemplate}
+    <paper-progress ?hidden="${!querying}" indeterminate></paper-progress>
+    ${dataUnavailable ? this._unavailableTemplate() : ''}
+    ${this._dropTargetTemplate()}
+
+    <saved-menu-wrapper
+      class="list"
+      selectable="anypoint-icon-item"
+      attrforselected="data-id"
+      .selected="${selectedItem}"
+      @selected-changed="${this._selectionChanged}">
+      ${hasRequests ? this._listTemplate() : ''}
+    </saved-menu-wrapper>`;
   }
 
   static get properties() {
     return {
+      // Database ID of the selected item.
+      selectedItem: { type: String },
       /**
        * Adds draggable property to the request list item element.
        * The `dataTransfer` object has `arc/request-object` mime type with
        * serialized JSON with request model.
        */
-      draggableEnabled: {type: Boolean, value: false, observer: '_draggableChanged'}
+      draggableEnabled: { type: Boolean },
+      /**
+       * Enables compatibility with Anypoint platform
+       */
+      compatibility: { type: Boolean }
     };
+  }
+
+  get _list() {
+    if (!this.__list) {
+      this.__list = this.shadowRoot.querySelector('.list');
+    }
+    return this.__list;
+  }
+
+  get draggableEnabled() {
+    return this._draggableEnabled;
+  }
+
+  set draggableEnabled(value) {
+    const old = this._draggableEnabled;
+    if (old === value) {
+      return;
+    }
+    this._draggableEnabled = value;
+    this._draggableChanged(value);
   }
 
   constructor() {
@@ -215,18 +307,34 @@ class SavedMenu extends SavedListMixin(RequestsListMixin(PolymerElement)) {
   }
 
   connectedCallback() {
-    super.connectedCallback();
+    if (super.connectedCallback) {
+      super.connectedCallback();
+    }
     this.type = 'saved';
-    this.$.list.addEventListener('scroll', this._scrollHandler);
+    this._addScrollEvent();
     if (this.draggableEnabled) {
       this._addDndEvents();
     }
   }
 
   disconnectedCallback() {
-    this.$.list.removeEventListener('scroll', this._scrollHandler);
-    super.disconnectedCallback();
+    if (super.disconnectedCallback) {
+      super.disconnectedCallback();
+    }
+    this._list.removeEventListener('scroll', this._scrollHandler);
     this._removeDndEvents();
+  }
+
+  firstUpdated() {
+    this._addScrollEvent();
+  }
+
+  _addScrollEvent() {
+    const list = this._list;
+    if (!list) {
+      return;
+    }
+    list.addEventListener('scroll', this._scrollHandler);
   }
 
   _draggableChanged(value) {
@@ -262,25 +370,23 @@ class SavedMenu extends SavedListMixin(RequestsListMixin(PolymerElement)) {
    * already querying).
    */
   _scrollHandler() {
-    this.loadNext();
-  }
-  /**
-   * Notifies the list that the resize event occurred.
-   * Should be called whhen content of the list changed but the list wasn't
-   * visible at the time.
-   */
-  notifyResize() {
-    if (!this.$ || !this.$.list) {
+    if (this.querying) {
       return;
     }
-    this.$.list.notifyResize();
+    const elm = this._list;
+    const delta = elm.scrollHeight - (elm.scrollTop + elm.offsetHeight);
+    if (delta < 120) {
+      this.loadNext();
+    }
   }
   /**
    * Handler for the `tap` event on the item.
    * @param {CustomEvent} e
    */
   _openSaved(e) {
-    const id = e.model.get('item._id');
+    const index = Number(e.currentTarget.dataset.index);
+    const request = this.requests[index];
+    const id = request._id;
     this._openRequest(id);
   }
   /**
@@ -313,22 +419,13 @@ class SavedMenu extends SavedListMixin(RequestsListMixin(PolymerElement)) {
     if (!this.draggableEnabled) {
       return;
     }
-    const request = e.model.get('item');
+    const index = Number(e.currentTarget.dataset.index);
+    const request = this.requests[index];
     const data = JSON.stringify(request);
     e.dataTransfer.setData('arc/request-object', data);
     e.dataTransfer.setData('arc/saved-request', request._id);
     e.dataTransfer.setData('arc-source/saved-menu', request._id);
     e.dataTransfer.effectAllowed = 'copyMove';
-  }
-  /**
-   * Computes value for the `draggable` property of the list item.
-   * When `draggableEnabled` is set it returns true which is one of the
-   * conditions to enable drag and drop on an element.
-   * @param {Boolean} draggableEnabled Current value of `draggableEnabled`
-   * @return {String} `true` or `false` (as string) depending on the argument.
-   */
-  _computeDraggableValue(draggableEnabled) {
-    return draggableEnabled ? 'true' : 'false';
   }
   /**
    * Handler for `dragover` event on this element. If the dagged item is compatible
@@ -346,6 +443,7 @@ class SavedMenu extends SavedListMixin(RequestsListMixin(PolymerElement)) {
     e.dataTransfer.dropEffect = 'copy';
     e.preventDefault();
     if (!this.classList.contains('drop-target')) {
+      /* eslint-disable-next-line */
       this.classList.add('drop-target');
     }
   }
@@ -364,6 +462,7 @@ class SavedMenu extends SavedListMixin(RequestsListMixin(PolymerElement)) {
     }
     e.preventDefault();
     if (this.classList.contains('drop-target')) {
+      /* eslint-disable-next-line */
       this.classList.remove('drop-target');
     }
   }
@@ -382,6 +481,7 @@ class SavedMenu extends SavedListMixin(RequestsListMixin(PolymerElement)) {
     }
     e.preventDefault();
     if (this.classList.contains('drop-target')) {
+      /* eslint-disable-next-line */
       this.classList.remove('drop-target');
     }
     const data = e.dataTransfer.getData('arc/request-object');
