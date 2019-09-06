@@ -197,3 +197,7 @@
 
 
 
+# [3.0.0](https://github.com/advanced-rest-client/saved-menu/compare/0.1.15...3.0.0) (2019-09-06)
+
+
+
