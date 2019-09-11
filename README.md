@@ -8,6 +8,10 @@
 
 The saved menu for Advanced REST Client is accessible list of saved items retrieved from local data store.
 
+## Deprecation notice
+
+This project is no longer maintained. Use `@advanced-rest-client/arc-menu` instead.
+
 ## Usage
 
 ### Installation
